@@ -179,33 +179,50 @@ function onButtonClick() {
     // Auto-pause if configured
     handleAutoPauseIfCurrent(url);
 
-    isLoading = true;
-    btn.classList.add('loading');
-    btn.style.cursor = 'not-allowed';
+    // Read settings to check if we should display the spinner
+    chrome.storage.local.get({ forceWindow: true }, (settings) => {
+      const showSpinner = !settings.forceWindow;
 
-    const startTime = Date.now();
+      if (showSpinner) {
+        isLoading = true;
+        btn.classList.add('loading');
+        btn.style.cursor = 'not-allowed';
+      }
 
-    // Content scripts cannot call sendNativeMessage directly — relay via the
-    // background service worker which has access to the native messaging API.
-    chrome.runtime.sendMessage({ type: 'PLAY_IN_MPV', url }, (response) => {
-      const elapsed = Date.now() - startTime;
-      const minDuration = 3500; // 3.5s minimum spinner show time (additional 2s)
-      const delay = Math.max(0, minDuration - elapsed);
+      const startTime = Date.now();
 
-      setTimeout(() => {
-        isLoading = false;
-        btn.classList.remove('loading');
-        btn.style.cursor = '';
+      // Content scripts cannot call sendNativeMessage directly — relay via the
+      // background service worker which has access to the native messaging API.
+      chrome.runtime.sendMessage({ type: 'PLAY_IN_MPV', url }, (response) => {
+        if (showSpinner) {
+          const elapsed = Date.now() - startTime;
+          const minDuration = 3500; // 3.5s minimum spinner show time (additional 2s)
+          const delay = Math.max(0, minDuration - elapsed);
 
-        if (chrome.runtime.lastError) {
-          console.error('[Play in MPV] Message relay error:',
-                        chrome.runtime.lastError.message);
-          return;
+          setTimeout(() => {
+            isLoading = false;
+            btn.classList.remove('loading');
+            btn.style.cursor = '';
+
+            if (chrome.runtime.lastError) {
+              console.error('[Play in MPV] Message relay error:',
+                            chrome.runtime.lastError.message);
+              return;
+            }
+            if (response && !response.ok) {
+              console.error('[Play in MPV] Host error:', response.error);
+            }
+          }, delay);
+        } else {
+          // If no spinner was shown, still log errors if any
+          if (chrome.runtime.lastError) {
+            console.error('[Play in MPV] Message relay error:',
+                          chrome.runtime.lastError.message);
+          } else if (response && !response.ok) {
+            console.error('[Play in MPV] Host error:', response.error);
+          }
         }
-        if (response && !response.ok) {
-          console.error('[Play in MPV] Host error:', response.error);
-        }
-      }, delay);
+      });
     });
   } catch (err) {
     console.error('[Play in MPV] sendMessage threw:', err);

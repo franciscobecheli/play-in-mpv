@@ -33,6 +33,7 @@ const DEFAULT_SETTINGS = {
   alwaysOnTop: false,
   borderless: false,
   fullscreen: false,
+  forceWindow: true,
   mpvPath: '',
   customFlags: ''
 };
@@ -81,6 +82,11 @@ function launchMpv(url) {
       // Fullscreen
       if (settings.fullscreen) {
         flags.push('--fs');
+      }
+
+      // Force immediate window creation
+      if (settings.forceWindow && !flags.includes('--force-window=immediate')) {
+        flags.push('--force-window=immediate');
       }
 
       // Custom flags

@@ -14,6 +14,7 @@ const DEFAULT_SETTINGS = {
   alwaysOnTop: false,
   borderless: false,
   fullscreen: false,
+  forceWindow: true,
   mpvPath: '',
   customFlags: ''
 };
@@ -27,6 +28,7 @@ const elements = {
   alwaysOnTop: document.getElementById('alwaysOnTop'),
   borderless: document.getElementById('borderless'),
   fullscreen: document.getElementById('fullscreen'),
+  forceWindow: document.getElementById('forceWindow'),
   mpvPath: document.getElementById('mpvPath'),
   customFlags: document.getElementById('customFlags'),
   toast: document.getElementById('toast')
@@ -65,6 +67,7 @@ async function loadSettings() {
     elements.alwaysOnTop.checked = settings.alwaysOnTop;
     elements.borderless.checked = settings.borderless;
     elements.fullscreen.checked = settings.fullscreen;
+    elements.forceWindow.checked = settings.forceWindow;
     elements.mpvPath.value = settings.mpvPath;
     elements.customFlags.value = settings.customFlags;
   } catch (err) {
@@ -84,6 +87,7 @@ async function saveSettings() {
     alwaysOnTop: elements.alwaysOnTop.checked,
     borderless: elements.borderless.checked,
     fullscreen: elements.fullscreen.checked,
+    forceWindow: elements.forceWindow.checked,
     mpvPath: elements.mpvPath.value.trim(),
     customFlags: elements.customFlags.value
   };
@@ -108,7 +112,8 @@ function setupListeners() {
     elements.autoPause,
     elements.alwaysOnTop,
     elements.borderless,
-    elements.fullscreen
+    elements.fullscreen,
+    elements.forceWindow
   ];
 
   immediateSaveList.forEach(input => {
