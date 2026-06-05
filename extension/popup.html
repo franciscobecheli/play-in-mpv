@@ -12,10 +12,15 @@
 <body>
   <!-- Status Toast -->
   <div id="toast" class="toast" aria-live="polite">
-    <svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+    <svg id="toastSuccessIcon" class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
       <polyline points="20 6 9 17 4 12"></polyline>
     </svg>
-    <span>Settings saved</span>
+    <svg id="toastErrorIcon" class="toast-icon error-icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="15" y1="9" x2="9" y2="15"></line>
+      <line x1="9" y1="9" x2="15" y2="15"></line>
+    </svg>
+    <span id="toastText">Settings saved</span>
   </div>
 
   <div class="container">
@@ -35,6 +40,29 @@
 
     <!-- Main Content / Settings -->
     <main class="content">
+      <!-- Section: Play Current Tab -->
+      <section class="section play-section">
+        <button id="playCurrentTabBtn" class="play-btn" disabled>
+          <span class="play-btn-content">
+            <svg class="play-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <span id="playBtnText">Checking active tab...</span>
+          </span>
+          <span class="spinner-container hidden">
+            <span class="spinner"></span>
+          </span>
+        </button>
+        <div id="playWarning" class="play-warning hidden">
+          <svg class="warning-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          <span id="warningText"></span>
+        </div>
+      </section>
+
       <!-- Section: Video Quality -->
       <section class="section">
         <h2 class="section-title">Video Quality</h2>

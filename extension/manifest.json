@@ -12,7 +12,8 @@
   "permissions": [
     "nativeMessaging",
     "contextMenus",
-    "storage"
+    "storage",
+    "activeTab"
   ],
   "host_permissions": [
     "https://www.youtube.com/*"

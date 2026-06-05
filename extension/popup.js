@@ -31,26 +31,125 @@ const elements = {
   forceWindow: document.getElementById('forceWindow'),
   mpvPath: document.getElementById('mpvPath'),
   customFlags: document.getElementById('customFlags'),
-  toast: document.getElementById('toast')
+  toast: document.getElementById('toast'),
+  toastText: document.getElementById('toastText'),
+  toastSuccessIcon: document.getElementById('toastSuccessIcon'),
+  toastErrorIcon: document.getElementById('toastErrorIcon'),
+  playCurrentTabBtn: document.getElementById('playCurrentTabBtn'),
+  playBtnText: document.getElementById('playBtnText'),
+  playWarning: document.getElementById('playWarning'),
+  warningText: document.getElementById('warningText'),
+  spinnerContainer: document.querySelector('.spinner-container')
 };
 
 let toastTimeout = null;
 let saveDebounceTimer = null;
+let currentTabUrl = '';
+
+// DRM Domain validation lists
+const DRM_RULES = [
+  { name: 'Netflix', pattern: /netflix\.com/i },
+  { name: 'Prime Video', pattern: /(primevideo\.com|amazon\.[a-z\.]+\/(gp\/video|show|video))/i },
+  { name: 'Disney+', pattern: /disneyplus\.com/i },
+  { name: 'Max', pattern: /max\.com/i },
+  { name: 'Hulu', pattern: /hulu\.com/i },
+  { name: 'Apple TV', pattern: /(tv\.apple\.com|apple\.com\/apple-tv-plus)/i },
+  { name: 'Paramount+', pattern: /paramountplus\.com/i },
+  { name: 'Peacock', pattern: /peacocktv\.com/i }
+];
 
 /**
- * Show a brief "Saved" confirmation toast.
+ * Show confirmation or error toast feedback.
  * Debounces calls to prevent blinking on rapid updates.
  */
-function showSavedToast() {
+function showToast(message, isError = false) {
   if (toastTimeout) {
     clearTimeout(toastTimeout);
+  }
+  
+  elements.toastText.textContent = message;
+  
+  if (isError) {
+    elements.toastSuccessIcon.classList.add('hidden');
+    elements.toastErrorIcon.classList.remove('hidden');
+  } else {
+    elements.toastSuccessIcon.classList.remove('hidden');
+    elements.toastErrorIcon.classList.add('hidden');
   }
   
   elements.toast.classList.add('show');
   
   toastTimeout = setTimeout(() => {
     elements.toast.classList.remove('show');
-  }, 1200);
+  }, isError ? 3000 : 1500);
+}
+
+/**
+ * Verify URL playability and DRM status.
+ */
+function checkUrl(urlStr) {
+  try {
+    const url = new URL(urlStr);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      return { status: 'invalid', message: 'Cannot play on internal browser pages.' };
+    }
+    
+    for (const rule of DRM_RULES) {
+      if (rule.pattern.test(urlStr)) {
+        return { status: 'drm', message: `DRM protected stream — ${rule.name} is not supported.` };
+      }
+    }
+    
+    return { status: 'valid', hostname: url.hostname };
+  } catch (e) {
+    return { status: 'invalid', message: 'Invalid active tab URL.' };
+  }
+}
+
+/**
+ * Detect active tab and set up Play button state.
+ */
+async function initPlayCurrentTab() {
+  try {
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tabs || tabs.length === 0) {
+      elements.playBtnText.textContent = 'No active tab found';
+      elements.playCurrentTabBtn.disabled = true;
+      return;
+    }
+    
+    const tab = tabs[0];
+    currentTabUrl = tab.url || '';
+    
+    const check = checkUrl(currentTabUrl);
+    
+    if (check.status === 'invalid') {
+      elements.playBtnText.textContent = 'Cannot play current tab';
+      elements.playCurrentTabBtn.disabled = true;
+      elements.playWarning.classList.remove('hidden');
+      elements.warningText.textContent = check.message;
+    } else if (check.status === 'drm') {
+      let displayHost = '';
+      try {
+        displayHost = new URL(currentTabUrl).hostname.replace('www.', '');
+      } catch (e) {
+        displayHost = 'current page';
+      }
+      elements.playBtnText.textContent = `Play ${displayHost} in MPV`;
+      elements.playCurrentTabBtn.disabled = true;
+      elements.playWarning.classList.remove('hidden');
+      elements.warningText.textContent = check.message;
+    } else {
+      const displayHost = check.hostname.replace('www.', '');
+      elements.playBtnText.textContent = `Play ${displayHost} in MPV`;
+      elements.playCurrentTabBtn.disabled = false;
+      elements.playWarning.classList.add('hidden');
+    }
+  } catch (err) {
+    console.error('[Play in MPV] Error loading current tab:', err);
+    elements.playBtnText.textContent = 'Error loading tab info';
+    elements.playCurrentTabBtn.disabled = true;
+  }
 }
 
 /**
@@ -94,7 +193,7 @@ async function saveSettings() {
 
   try {
     await chrome.storage.local.set(updatedSettings);
-    showSavedToast();
+    showToast('Settings saved');
   } catch (err) {
     console.error('[Play in MPV] Failed to save settings:', err);
   }
@@ -138,10 +237,42 @@ function setupListeners() {
       }, 350);
     });
   });
+
+  // Listener for the "Play Current Tab" button
+  elements.playCurrentTabBtn.addEventListener('click', async () => {
+    if (!currentTabUrl) return;
+
+    elements.playCurrentTabBtn.disabled = true;
+    elements.playCurrentTabBtn.classList.add('loading');
+    elements.spinnerContainer.classList.remove('hidden');
+
+    try {
+      await new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage({ type: 'PLAY_IN_MPV', url: currentTabUrl }, (res) => {
+          if (chrome.runtime.lastError) {
+            reject(new Error(chrome.runtime.lastError.message));
+          } else if (res && !res.ok) {
+            reject(new Error(res.error || 'Failed to open video in MPV'));
+          } else {
+            resolve(res);
+          }
+        });
+      });
+      showToast('Launching MPV...');
+    } catch (err) {
+      console.error('[Play in MPV] Play current tab error:', err);
+      showToast(err.message || 'Failed to launch MPV', true);
+    } finally {
+      elements.playCurrentTabBtn.classList.remove('loading');
+      elements.spinnerContainer.classList.add('hidden');
+      initPlayCurrentTab();
+    }
+  });
 }
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
   loadSettings();
   setupListeners();
+  initPlayCurrentTab();
 });
