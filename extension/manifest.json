@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Play in MPV",
+  "version": "0.1.0",
+  "description": "Play the currently open YouTube video in mpv with a single click.",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {},
+  "permissions": [
+    "nativeMessaging"
+  ],
+  "host_permissions": [
+    "https://www.youtube.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
