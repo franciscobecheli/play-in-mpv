@@ -14,7 +14,7 @@ const STYLES_ID  = 'play-in-mpv-styles';
 // so the icon scales correctly in every player size (including fullscreen).
 // ---------------------------------------------------------------------------
 const MPV_ICON_SVG = `
-<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+<svg class="mpv-btn-icon" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
   <!-- Widescreen monitor outline, centred with breathing room on all sides -->
   <rect x="6" y="9" width="24" height="15" rx="2"
         fill="none" stroke="white" stroke-width="1.5"/>
@@ -23,6 +23,15 @@ const MPV_ICON_SVG = `
   <!-- Small base/stand below the screen -->
   <line x1="18" y1="24" x2="18" y2="27" stroke="white" stroke-width="1.5"/>
   <line x1="13" y1="27" x2="23" y2="27" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+</svg>`.trim();
+
+const MPV_SPINNER_SVG = `
+<svg class="mpv-btn-spinner" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+  <!-- Spinner base track -->
+  <circle cx="18" cy="18" r="12" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="3"/>
+  <!-- Rotating arc -->
+  <circle cx="18" cy="18" r="12" fill="none" stroke="white" stroke-width="3"
+          stroke-dasharray="75.4" stroke-dashoffset="55" stroke-linecap="round"/>
 </svg>`.trim();
 
 // ---------------------------------------------------------------------------
@@ -48,14 +57,31 @@ function injectStyles() {
       background: transparent !important;
       position: relative !important;
     }
-    #${BUTTON_ID} > svg {
+    #${BUTTON_ID} svg {
       display: block !important;
       position: static !important;
       width: 36px !important;
       height: 36px !important;
       margin: 0 !important;
       padding: 0 !important;
+    }
+    #${BUTTON_ID} svg.mpv-btn-icon {
       transform: none !important;
+    }
+    #${BUTTON_ID} .mpv-btn-spinner {
+      display: none !important;
+    }
+    #${BUTTON_ID}.loading .mpv-btn-icon {
+      display: none !important;
+    }
+    #${BUTTON_ID}.loading .mpv-btn-spinner {
+      display: block !important;
+      transform-origin: center !important;
+      animation: play-in-mpv-spin 1s linear infinite !important;
+    }
+    @keyframes play-in-mpv-spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
   `;
   document.head.appendChild(style);
@@ -65,13 +91,15 @@ function injectStyles() {
 // Button injection
 // ---------------------------------------------------------------------------
 
+let isLoading = false;
+
 function createButton() {
   const btn = document.createElement('button');
   btn.id        = BUTTON_ID;
   btn.className = 'ytp-button play-in-mpv-btn';
   btn.title     = 'Play in MPV';
   btn.setAttribute('aria-label', 'Play in MPV');
-  btn.innerHTML = MPV_ICON_SVG;
+  btn.innerHTML = MPV_ICON_SVG + MPV_SPINNER_SVG;
   btn.addEventListener('click', onButtonClick);
   return btn;
 }
@@ -106,23 +134,48 @@ function attemptInjection() {
 // ---------------------------------------------------------------------------
 
 function onButtonClick() {
+  if (isLoading) return;
+
+  const btn = document.getElementById(BUTTON_ID);
+  if (!btn) return;
+
   try {
     const url = window.location.href;
+
+    isLoading = true;
+    btn.classList.add('loading');
+    btn.style.cursor = 'not-allowed';
+
+    const startTime = Date.now();
 
     // Content scripts cannot call sendNativeMessage directly — relay via the
     // background service worker which has access to the native messaging API.
     chrome.runtime.sendMessage({ type: 'PLAY_IN_MPV', url }, (response) => {
-      if (chrome.runtime.lastError) {
-        console.error('[Play in MPV] Message relay error:',
-                      chrome.runtime.lastError.message);
-        return;
-      }
-      if (response && !response.ok) {
-        console.error('[Play in MPV] Host error:', response.error);
-      }
+      const elapsed = Date.now() - startTime;
+      const minDuration = 3500; // 3.5s minimum spinner show time (additional 2s)
+      const delay = Math.max(0, minDuration - elapsed);
+
+      setTimeout(() => {
+        isLoading = false;
+        btn.classList.remove('loading');
+        btn.style.cursor = '';
+
+        if (chrome.runtime.lastError) {
+          console.error('[Play in MPV] Message relay error:',
+                        chrome.runtime.lastError.message);
+          return;
+        }
+        if (response && !response.ok) {
+          console.error('[Play in MPV] Host error:', response.error);
+        }
+      }, delay);
     });
   } catch (err) {
     console.error('[Play in MPV] sendMessage threw:', err);
+    // Reset immediately on crash/synchronous throw
+    isLoading = false;
+    btn.classList.remove('loading');
+    btn.style.cursor = '';
   }
 }
 
