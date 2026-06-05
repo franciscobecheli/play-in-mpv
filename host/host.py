@@ -51,15 +51,26 @@ def find_mpv() -> str:
     return 'mpv'   # fall back to PATH lookup
 
 
-def launch_mpv(url: str) -> tuple[bool, str]:
+def launch_mpv(url: str, mpv_path: str = None, flags: list = None) -> tuple[bool, str]:
     """
     Spawn mpv as a detached subprocess.
 
     The process is fully detached (new session, all stdio → /dev/null) so
     it continues playing after Chrome terminates the native host.
     """
-    mpv = find_mpv()
-    cmd = [mpv, url]
+    mpv = mpv_path
+    if mpv:
+        # If user provides a command name (e.g. "mpv"), trust it.
+        # If they provide a path (has '/' or '\'), verify it exists and is executable.
+        if ('/' in mpv or '\\' in mpv) and not (os.path.isfile(mpv) and os.access(mpv, os.X_OK)):
+            mpv = find_mpv()
+    else:
+        mpv = find_mpv()
+
+    cmd = [mpv]
+    if flags and isinstance(flags, list):
+        cmd.extend(flags)
+    cmd.append(url)
 
     popen_kwargs = {
         'stdin':  subprocess.DEVNULL,
@@ -96,7 +107,10 @@ def main() -> None:
         send_message({'ok': False, 'error': 'No URL provided'})
         sys.exit(1)
 
-    ok, info = launch_mpv(url)
+    mpv_path = message.get('mpv_path')
+    flags = message.get('flags')
+
+    ok, info = launch_mpv(url, mpv_path, flags)
     send_message({'ok': ok, 'info': info})
 
 

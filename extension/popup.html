@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Play in MPV Settings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <!-- Status Toast -->
+  <div id="toast" class="toast" aria-live="polite">
+    <svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+    <span>Settings saved</span>
+  </div>
+
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo-area">
+        <svg class="logo-icon" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+          <rect x="5" y="8" width="26" height="17" rx="3" fill="none" stroke="#ff0000" stroke-width="2.2"/>
+          <polygon points="14,12 14,21 23,16.5" fill="#ff0000"/>
+          <line x1="18" y1="25" x2="18" y2="28" stroke="#ff0000" stroke-width="2.2"/>
+          <line x1="12" y1="28" x2="24" y2="28" stroke="#ff0000" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+        <h1 class="title">Play in MPV</h1>
+      </div>
+      <span class="version-badge">v0.1.0</span>
+    </header>
+
+    <!-- Main Content / Settings -->
+    <main class="content">
+      <!-- Section: Video Quality -->
+      <section class="section">
+        <h2 class="section-title">Video Quality</h2>
+        
+        <div class="form-group">
+          <label for="qualityCap" class="form-label">Quality Cap</label>
+          <p class="form-desc">Limit stream format based on video height.</p>
+          <div class="select-wrapper">
+            <select id="qualityCap">
+              <option value="best">Best (Default)</option>
+              <option value="2160p">4K (2160p)</option>
+              <option value="1440p">2K (1440p)</option>
+              <option value="1080p">1080p Full HD</option>
+              <option value="720p">720p HD</option>
+              <option value="480p">480p SD</option>
+              <option value="audio">Audio Only</option>
+            </select>
+            <div class="select-arrow"></div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="hwdec" class="form-label">Hardware Decoding</label>
+          <p class="form-desc">Choose a hardware video decoding API.</p>
+          <div class="select-wrapper">
+            <select id="hwdec">
+              <option value="auto">Auto (Safe & Enabled)</option>
+              <option value="auto-safe">Auto Safe</option>
+              <option value="disabled">Disabled (Software dec)</option>
+            </select>
+            <div class="select-arrow"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Player Behavior -->
+      <section class="section">
+        <h2 class="section-title">Player Settings</h2>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <label for="savePosition" class="setting-label">Resume Playback</label>
+            <p class="setting-desc">Reopen videos at the exact time you stopped watching.</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="savePosition">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <label for="autoPause" class="setting-label">Auto-Pause YouTube</label>
+            <p class="setting-desc">Pause the YouTube player on the web when launching in MPV.</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="autoPause">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </section>
+
+      <!-- Section: Window Settings -->
+      <section class="section">
+        <h2 class="section-title">Window Layout</h2>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <label for="alwaysOnTop" class="setting-label">Always on Top</label>
+            <p class="setting-desc">Keep the MPV player window on top of other applications.</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="alwaysOnTop">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <label for="borderless" class="setting-label">Borderless Window</label>
+            <p class="setting-desc">Disable standard OS window borders and title bars.</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="borderless">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <label for="fullscreen" class="setting-label">Start in Fullscreen</label>
+            <p class="setting-desc">Automatically launch MPV in fullscreen mode.</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="fullscreen">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </section>
+
+      <!-- Section: Advanced -->
+      <section class="section">
+        <h2 class="section-title">Advanced Configuration</h2>
+
+        <div class="form-group">
+          <label for="mpvPath" class="form-label">MPV Executable Path</label>
+          <p class="form-desc">Leave blank to use default system path lookup.</p>
+          <input type="text" id="mpvPath" class="form-input" placeholder="e.g. /usr/bin/mpv">
+        </div>
+
+        <div class="form-group">
+          <label for="customFlags" class="form-label">Custom Command-line Flags</label>
+          <p class="form-desc">Additional arguments passed to MPV (one per line or space-separated).</p>
+          <textarea id="customFlags" class="form-textarea" rows="2" placeholder="e.g. --volume=70&#10;--no-keepaspect-window"></textarea>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

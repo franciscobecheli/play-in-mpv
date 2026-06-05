@@ -6,9 +6,13 @@
   "background": {
     "service_worker": "background.js"
   },
-  "action": {},
+  "action": {
+    "default_popup": "popup.html"
+  },
   "permissions": [
-    "nativeMessaging"
+    "nativeMessaging",
+    "contextMenus",
+    "storage"
   ],
   "host_permissions": [
     "https://www.youtube.com/*"
