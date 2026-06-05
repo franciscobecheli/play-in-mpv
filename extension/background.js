@@ -48,6 +48,7 @@ function launchMpv(url) {
         let formatStr = '';
         if (settings.qualityCap === 'audio') {
           formatStr = 'bestaudio/best';
+          flags.push('--force-window=immediate');
         } else {
           const height = settings.qualityCap.replace('p', '');
           formatStr = `bestvideo[height<=${height}]+bestaudio/best[height<=${height}]`;
