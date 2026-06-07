@@ -502,14 +502,38 @@
               <div class="step-title">Ensure Requirements are Installed</div>
               <div class="step-desc">
                 Make sure you have <strong>MPV</strong>, <strong>yt-dlp</strong>, and <strong>Python 3</strong> installed.
-                <br><em>Tip:</em> You can install them quickly using the built-in Windows Package Manager (<code>winget</code>) in Command Prompt or PowerShell:
+                You can install them quickly using the built-in Windows Package Manager (<code>winget</code>) in Command Prompt or PowerShell:
               </div>
               <div class="code-container">
                 <button class="copy-btn" onclick="copyCode(this)">
                   <svg class="icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                   Copy
                 </button>
-                <div class="code-content">winget install mpv.mpv yt-dlp.yt-dlp Python.Python.3</div>
+                <div class="code-content">winget install python3 shinchiro.mpv yt-dlp.yt-dlp</div>
+              </div>
+              <div class="step-desc" style="margin-top: 14px;">
+                After installing, open a <strong>new</strong> Command Prompt or PowerShell window and verify each tool is on your PATH by running:
+              </div>
+              <div class="code-container">
+                <button class="copy-btn" onclick="copyCode(this)">
+                  <svg class="icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  Copy
+                </button>
+                <div class="code-content">mpv --version
+yt-dlp --version
+python --version</div>
+              </div>
+              <div class="step-desc" style="margin-top: 14px;">
+                If any command is not found, you need to add it to your system PATH manually:
+                <ol style="margin: 8px 0 0 20px; display: flex; flex-direction: column; gap: 4px;">
+                  <li>Open <strong>Start → System → Advanced system settings → Environment Variables</strong>.</li>
+                  <li>Under <strong>System variables</strong>, select <code>Path</code> and click <strong>Edit</strong>.</li>
+                  <li>Add the folder containing the missing executable (e.g. <code>C:\Program Files\mpv</code>).</li>
+                  <li>Click <strong>OK</strong> on all dialogs to save, then open a new terminal to verify.</li>
+                </ol>
+              </div>
+              <div class="step-desc" style="margin-top: 14px; color: var(--text-main);">
+                ⚠️ <strong>Important:</strong> Chrome inherits PATH only at launch time. If you installed or added tools to PATH while Chrome was already open, you <strong>must fully close and reopen Chrome</strong> — including from the system tray — before the extension can detect them.
               </div>
             </li>
             

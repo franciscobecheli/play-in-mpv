@@ -47,8 +47,23 @@ Install `mpv`, `yt-dlp`, and `python` on your system.
 #### Windows
 Run the following command in Command Prompt or PowerShell (uses Windows Package Manager):
 ```cmd
-winget install mpv.mpv yt-dlp.yt-dlp Python.Python.3
+winget install python3 shinchiro.mpv yt-dlp.yt-dlp
 ```
+
+After installing, open a **new** terminal and verify each tool is on your PATH:
+```cmd
+mpv --version
+yt-dlp --version
+python --version
+```
+
+If any command is not found, add its folder to your **System PATH** manually:
+1. Open **Start → System → Advanced system settings → Environment Variables**.
+2. Under **System variables**, select `Path` and click **Edit**.
+3. Add the folder containing the missing executable (e.g. `C:\Program Files\mpv`).
+4. Click **OK** on all dialogs, then open a new terminal to verify.
+
+> ⚠️ **Chrome restart required** — Chrome reads PATH only at launch time. If you installed or modified PATH while Chrome was running, you must **fully close Chrome** (including from the system tray) and reopen it before the extension can detect the tools.
 
 #### macOS (Homebrew)
 ```bash
