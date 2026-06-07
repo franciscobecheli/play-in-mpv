@@ -167,23 +167,26 @@ function handleAutoPauseIfCurrent(targetUrl) {
 // Click handler — send native message to launch mpv
 // ---------------------------------------------------------------------------
 
-function onButtonClick() {
+function launchCurrentVideo() {
   if (isLoading) return;
 
+  const url = window.location.href;
+  const path = window.location.pathname;
+  if (!path.startsWith('/watch') && !path.startsWith('/shorts')) {
+    console.log('[Play in MPV] Shortcut ignored: Not on a watch or shorts page.');
+    return;
+  }
+
   const btn = document.getElementById(BUTTON_ID);
-  if (!btn) return;
 
   try {
-    const url = window.location.href;
-    
     // Auto-pause if configured
     handleAutoPauseIfCurrent(url);
 
-    // Read settings to check if we should display the spinner
     chrome.storage.local.get({ forceWindow: true }, (settings) => {
       const showSpinner = !settings.forceWindow;
 
-      if (showSpinner) {
+      if (showSpinner && btn) {
         isLoading = true;
         btn.classList.add('loading');
         btn.style.cursor = 'not-allowed';
@@ -191,12 +194,10 @@ function onButtonClick() {
 
       const startTime = Date.now();
 
-      // Content scripts cannot call sendNativeMessage directly — relay via the
-      // background service worker which has access to the native messaging API.
       chrome.runtime.sendMessage({ type: 'PLAY_IN_MPV', url }, (response) => {
-        if (showSpinner) {
+        if (showSpinner && btn) {
           const elapsed = Date.now() - startTime;
-          const minDuration = 3500; // 3.5s minimum spinner show time (additional 2s)
+          const minDuration = 3500; // 3.5s minimum spinner show time
           const delay = Math.max(0, minDuration - elapsed);
 
           setTimeout(() => {
@@ -214,7 +215,6 @@ function onButtonClick() {
             }
           }, delay);
         } else {
-          // If no spinner was shown, still log errors if any
           if (chrome.runtime.lastError) {
             console.error('[Play in MPV] Message relay error:',
                           chrome.runtime.lastError.message);
@@ -225,178 +225,17 @@ function onButtonClick() {
       });
     });
   } catch (err) {
-    console.error('[Play in MPV] sendMessage threw:', err);
-    // Reset immediately on crash/synchronous throw
+    console.error('[Play in MPV] launchCurrentVideo threw:', err);
     isLoading = false;
-    btn.classList.remove('loading');
-    btn.style.cursor = '';
+    if (btn) {
+      btn.classList.remove('loading');
+      btn.style.cursor = '';
+    }
   }
 }
 
-// ---------------------------------------------------------------------------
-// Three-dot context menu option
-// ---------------------------------------------------------------------------
-
-let lastClickedMenuVideoUrl = null;
-
-function findVideoUrlFromAnchor(anchor) {
-  let href = anchor.getAttribute('href');
-  if (href) {
-    return new URL(href, window.location.origin).href;
-  }
-
-  // Fallback: search the parent card container for any watch/shorts link
-  const parentCard = anchor.closest('ytd-rich-grid-media, ytd-video-renderer, ytd-compact-video-renderer, ytd-grid-video-renderer, ytd-playlist-video-renderer, ytd-reel-item-renderer') || anchor.parentElement;
-  if (parentCard) {
-    const fallbackAnchor = parentCard.querySelector('a[href*="/watch"], a[href*="/shorts"]');
-    if (fallbackAnchor) {
-      href = fallbackAnchor.getAttribute('href');
-      if (href) {
-        return new URL(href, window.location.origin).href;
-      }
-    }
-  }
-
-  return null;
-}
-
-// Capture three-dot menu clicks (mousedown & click) to cache the video URL
-function handleMenuTrigger(e) {
-  try {
-    const menuBtn = e.target.closest('ytd-menu-renderer yt-icon-button, ytd-menu-renderer button, yt-icon-button.ytd-menu-renderer, #menu-button');
-    if (menuBtn) {
-      lastClickedMenuVideoUrl = null;
-
-      const parentCard = menuBtn.closest('ytd-rich-grid-media, ytd-video-renderer, ytd-compact-video-renderer, ytd-grid-video-renderer, ytd-playlist-video-renderer, ytd-reel-item-renderer') || menuBtn.parentElement;
-      if (parentCard) {
-        const anchor = parentCard.querySelector('a#thumbnail') || parentCard.querySelector('a');
-        if (anchor) {
-          lastClickedMenuVideoUrl = findVideoUrlFromAnchor(anchor);
-          console.log('[Play in MPV] Resolved URL for three-dot menu on event:', e.type, '->', lastClickedMenuVideoUrl);
-        }
-      }
-    }
-  } catch (err) {
-    console.warn('[Play in MPV] Error capturing three-dot menu click:', err);
-  }
-}
-
-document.addEventListener('mousedown', handleMenuTrigger, { capture: true, passive: true });
-document.addEventListener('click', handleMenuTrigger, { capture: true, passive: true });
-
-function launchVideoFromMenu(url) {
-  try {
-    console.log('[Play in MPV] Launching video from menu:', url);
-    
-    // Auto-pause if configured
-    handleAutoPauseIfCurrent(url);
-
-    chrome.runtime.sendMessage({ type: 'PLAY_IN_MPV', url }, (response) => {
-      if (chrome.runtime.lastError) {
-        console.error('[Play in MPV] Message relay error:', chrome.runtime.lastError.message);
-        return;
-      }
-      if (response && !response.ok) {
-        console.error('[Play in MPV] Host error:', response.error);
-      }
-    });
-  } catch (err) {
-    console.error('[Play in MPV] sendMessage threw:', err);
-  }
-}
-
-function createMenuItem(url) {
-  const item = document.createElement('ytd-menu-service-item-renderer');
-  item.className = 'style-scope ytd-menu-popup-renderer play-in-mpv-menu-item';
-  item.setAttribute('role', 'menuitem');
-  item.setAttribute('use-icons', '');
-
-  item.innerHTML = `
-    <tp-yt-paper-item class="style-scope ytd-menu-service-item-renderer" role="option" style="cursor: pointer; display: flex; align-items: center; padding: 0 16px; height: 40px; color: var(--yt-spec-text-primary, #fff); font-size: 1.4rem;">
-      <yt-icon class="style-scope ytd-menu-service-item-renderer" style="width: 24px; height: 24px; margin-right: 16px; display: flex; align-items: center; justify-content: center; fill: currentColor; stroke: currentColor;">
-        ${MPV_ICON_SVG}
-      </yt-icon>
-      <yt-formatted-string class="style-scope ytd-menu-service-item-renderer">Play in MPV</yt-formatted-string>
-    </tp-yt-paper-item>
-  `.trim();
-
-  item.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    // Close the dropdown menu
-    const popup = item.closest('ytd-menu-popup-renderer');
-    if (popup) {
-      const dropdown = popup.closest('tp-yt-iron-dropdown');
-      if (dropdown) {
-        if (typeof dropdown.close === 'function') {
-          dropdown.close();
-        } else {
-          dropdown.style.display = 'none';
-          dropdown.removeAttribute('opened');
-        }
-      }
-    }
-
-    launchVideoFromMenu(url);
-  });
-
-  return item;
-}
-
-function injectIntoThreeDotMenu(popup) {
-  try {
-    console.log('[Play in MPV] Menu popup detected in DOM:', popup);
-
-    if (popup.querySelector('.play-in-mpv-menu-item')) {
-      console.log('[Play in MPV] Custom menu item already exists in this popup.');
-      return;
-    }
-
-    console.log('[Play in MPV] Current cached URL for injection:', lastClickedMenuVideoUrl);
-    if (!lastClickedMenuVideoUrl) {
-      console.warn('[Play in MPV] No cached URL available for this menu popup.');
-      return;
-    }
-
-    const listbox = popup.querySelector('tp-yt-paper-listbox, #items');
-    if (!listbox) {
-      console.warn('[Play in MPV] Could not find items container (listbox) inside popup menu', popup);
-      return;
-    }
-
-    const menuItem = createMenuItem(lastClickedMenuVideoUrl);
-    listbox.insertBefore(menuItem, listbox.firstChild);
-    console.log('[Play in MPV] Successfully prepended Play in MPV option to dropdown listbox.');
-  } catch (err) {
-    console.warn('[Play in MPV] Three-dot menu injection failed:', err);
-  }
-}
-
-function setupMenuObserver() {
-  const observer = new MutationObserver((mutations) => {
-    try {
-      for (const mutation of mutations) {
-        for (const node of mutation.addedNodes) {
-          if (node.nodeType !== Node.ELEMENT_NODE) continue;
-
-          const popup = node.querySelector('ytd-menu-popup-renderer');
-          if (popup) {
-            injectIntoThreeDotMenu(popup);
-          } else if (node.tagName === 'YTD-MENU-POPUP-RENDERER') {
-            injectIntoThreeDotMenu(node);
-          }
-        }
-      }
-    } catch (err) {
-      console.warn('[Play in MPV] MutationObserver failed:', err);
-    }
-  });
-
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true
-  });
+function onButtonClick() {
+  launchCurrentVideo();
 }
 
 // ---------------------------------------------------------------------------
@@ -414,5 +253,82 @@ window.addEventListener('yt-navigate-finish', handleNavigation);
 // Also attempt injection on initial load (in case we land directly on /watch)
 handleNavigation();
 
-// Set up MutationObserver for three-dot menu dropdowns
-setupMenuObserver();
+
+
+// ---------------------------------------------------------------------------
+// Keyboard shortcut handling
+// ---------------------------------------------------------------------------
+let shortcutEnabled = true;
+let shortcutKey = 'Alt+P';
+
+function updateSettingsFromStorage() {
+  chrome.storage.local.get({
+    shortcutEnabled: true,
+    shortcutKey: 'Alt+P'
+  }, (settings) => {
+    shortcutEnabled = settings.shortcutEnabled;
+    shortcutKey = settings.shortcutKey;
+  });
+}
+
+updateSettingsFromStorage();
+
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName !== 'local') return;
+  if (changes.shortcutEnabled) {
+    shortcutEnabled = changes.shortcutEnabled.newValue;
+  }
+  if (changes.shortcutKey) {
+    shortcutKey = changes.shortcutKey.newValue;
+  }
+});
+
+function matchShortcut(e, shortcutStr) {
+  if (!shortcutStr) return false;
+
+  const parts = shortcutStr.split('+');
+  let targetKey = parts[parts.length - 1];
+
+  if (targetKey === '' && parts.length > 1) {
+    targetKey = '+';
+  }
+
+  const hasCtrl = parts.includes('Ctrl');
+  const hasAlt = parts.includes('Alt');
+  const hasShift = parts.includes('Shift');
+  const hasMeta = parts.includes('Meta');
+
+  if (e.ctrlKey !== hasCtrl) return false;
+  if (e.altKey !== hasAlt) return false;
+  if (e.shiftKey !== hasShift) return false;
+  if (e.metaKey !== hasMeta) return false;
+
+  const eventKey = e.key;
+  if (targetKey === 'Space') {
+    return eventKey === ' ';
+  }
+
+  return eventKey.toUpperCase() === targetKey.toUpperCase();
+}
+
+function handleKeyDown(e) {
+  if (!shortcutEnabled) return;
+
+  const activeEl = document.activeElement;
+  if (activeEl) {
+    const tagName = activeEl.tagName.toLowerCase();
+    const isInput = tagName === 'input' || 
+                    tagName === 'textarea' || 
+                    activeEl.isContentEditable || 
+                    activeEl.getAttribute('contenteditable') === 'true';
+    if (isInput) return;
+  }
+
+  if (matchShortcut(e, shortcutKey)) {
+    e.preventDefault();
+    e.stopPropagation();
+    launchCurrentVideo();
+  }
+}
+
+window.addEventListener('keydown', handleKeyDown, { capture: true });

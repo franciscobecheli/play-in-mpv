@@ -16,7 +16,9 @@ const DEFAULT_SETTINGS = {
   fullscreen: false,
   forceWindow: true,
   mpvPath: '',
-  customFlags: ''
+  customFlags: '',
+  shortcutEnabled: true,
+  shortcutKey: 'Alt+P'
 };
 
 // UI Element selectors
@@ -39,7 +41,12 @@ const elements = {
   playBtnText: document.getElementById('playBtnText'),
   playWarning: document.getElementById('playWarning'),
   warningText: document.getElementById('warningText'),
-  spinnerContainer: document.querySelector('.spinner-container')
+  spinnerContainer: document.querySelector('.spinner-container'),
+  shortcutEnabled: document.getElementById('shortcutEnabled'),
+  shortcutKeyBtn: document.getElementById('shortcutKeyBtn'),
+  shortcutKeyRow: document.getElementById('shortcutKeyRow'),
+  ytdlWarningBanner: document.getElementById('ytdlWarningBanner'),
+  warningBannerText: document.getElementById('warningBannerText')
 };
 
 let toastTimeout = null;
@@ -62,9 +69,10 @@ const DRM_RULES = [
  * Show confirmation or error toast feedback.
  * Debounces calls to prevent blinking on rapid updates.
  */
-function showToast(message, isError = false) {
+function showToast(message, isError = false, autoDismiss = true) {
   if (toastTimeout) {
     clearTimeout(toastTimeout);
+    toastTimeout = null;
   }
   
   elements.toastText.textContent = message;
@@ -79,9 +87,11 @@ function showToast(message, isError = false) {
   
   elements.toast.classList.add('show');
   
-  toastTimeout = setTimeout(() => {
-    elements.toast.classList.remove('show');
-  }, isError ? 3000 : 1500);
+  if (autoDismiss) {
+    toastTimeout = setTimeout(() => {
+      elements.toast.classList.remove('show');
+    }, isError ? 3000 : 1500);
+  }
 }
 
 /**
@@ -153,6 +163,54 @@ async function initPlayCurrentTab() {
 }
 
 /**
+ * Helper to update the system warning banner content and visibility based on requirements check.
+ */
+function updateWarningBanner(ytdlMissing, mpvMissing, hostMissing = false) {
+  if (hostMissing) {
+    elements.ytdlWarningBanner.classList.remove('hidden');
+    elements.warningBannerText.innerHTML = '<strong>Native Host Not Connected:</strong> The local bridge is missing or failed to connect. <a href="https://franciscobecheli.github.io/play-in-mpv/" target="_blank" style="color: #60a5fa; text-decoration: underline; font-weight: 500;">Download & Install Setup Guide</a>';
+  } else if (ytdlMissing || mpvMissing) {
+    elements.ytdlWarningBanner.classList.remove('hidden');
+    if (ytdlMissing && mpvMissing) {
+      elements.warningBannerText.innerHTML = '<strong>System Warning:</strong> Both <code>mpv</code> and <code>yt-dlp</code> were not found on your system. Web playback will fail. Please install them.';
+    } else if (ytdlMissing) {
+      elements.warningBannerText.innerHTML = '<strong>System Warning:</strong> <code>yt-dlp</code> was not found on your system. Web playback will fail. Please install it.';
+    } else {
+      elements.warningBannerText.innerHTML = '<strong>System Warning:</strong> <code>mpv</code> was not found on your system. Web playback will fail. Please install it.';
+    }
+  } else {
+    elements.ytdlWarningBanner.classList.add('hidden');
+  }
+}
+
+/**
+ * Query the background script to check if yt-dlp or mpv are missing.
+ */
+async function checkSystemStatus() {
+  try {
+    const res = await new Promise((resolve, reject) => {
+      chrome.runtime.sendMessage({ type: 'CHECK_STATUS' }, (res) => {
+        if (chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+        } else {
+          resolve(res);
+        }
+      });
+    });
+    if (res && res.ok && res.response) {
+      updateWarningBanner(!!res.response.ytdl_missing, !!res.response.mpv_missing, false);
+    } else if (res && !res.ok) {
+      updateWarningBanner(false, false, true);
+    } else {
+      updateWarningBanner(false, false, false);
+    }
+  } catch (err) {
+    console.error('[Play in MPV] Failed to check system status:', err);
+    updateWarningBanner(false, false, true);
+  }
+}
+
+/**
  * Read settings from storage and populate the inputs.
  */
 async function loadSettings() {
@@ -169,6 +227,16 @@ async function loadSettings() {
     elements.forceWindow.checked = settings.forceWindow;
     elements.mpvPath.value = settings.mpvPath;
     elements.customFlags.value = settings.customFlags;
+    elements.shortcutEnabled.checked = settings.shortcutEnabled;
+    elements.shortcutKeyBtn.textContent = settings.shortcutKey;
+    
+    if (settings.shortcutEnabled) {
+      elements.shortcutKeyRow.classList.remove('disabled');
+      elements.shortcutKeyBtn.disabled = false;
+    } else {
+      elements.shortcutKeyRow.classList.add('disabled');
+      elements.shortcutKeyBtn.disabled = true;
+    }
   } catch (err) {
     console.error('[Play in MPV] Failed to load settings:', err);
   }
@@ -188,7 +256,9 @@ async function saveSettings() {
     fullscreen: elements.fullscreen.checked,
     forceWindow: elements.forceWindow.checked,
     mpvPath: elements.mpvPath.value.trim(),
-    customFlags: elements.customFlags.value
+    customFlags: elements.customFlags.value,
+    shortcutEnabled: elements.shortcutEnabled.checked,
+    shortcutKey: elements.shortcutKeyBtn.textContent
   };
 
   try {
@@ -199,10 +269,87 @@ async function saveSettings() {
   }
 }
 
+let isRecording = false;
+
+function startRecording() {
+  if (isRecording) return;
+  isRecording = true;
+  elements.shortcutKeyBtn.classList.add('recording');
+  elements.shortcutKeyBtn.textContent = 'Press keys...';
+  document.addEventListener('keydown', handleShortcutRecord, true);
+}
+
+function stopRecording(cancelled = false, newShortcut = '') {
+  if (!isRecording) return;
+  isRecording = false;
+  elements.shortcutKeyBtn.classList.remove('recording');
+  document.removeEventListener('keydown', handleShortcutRecord, true);
+
+  if (!cancelled && newShortcut) {
+    elements.shortcutKeyBtn.textContent = newShortcut;
+    saveSettings();
+  } else {
+    chrome.storage.local.get({ shortcutKey: 'Alt+P' }, (settings) => {
+      elements.shortcutKeyBtn.textContent = settings.shortcutKey;
+    });
+  }
+}
+
+function handleShortcutRecord(e) {
+  e.preventDefault();
+  e.stopPropagation();
+
+  const key = e.key;
+
+  if (key === 'Escape') {
+    stopRecording(true);
+    return;
+  }
+
+  if (['Control', 'Alt', 'Shift', 'Meta'].includes(key)) {
+    let parts = [];
+    if (e.ctrlKey) parts.push('Ctrl');
+    if (e.altKey) parts.push('Alt');
+    if (e.shiftKey) parts.push('Shift');
+    if (e.metaKey) parts.push('Meta');
+    parts.push('...');
+    elements.shortcutKeyBtn.textContent = parts.join('+');
+    return;
+  }
+
+  let parts = [];
+  if (e.ctrlKey) parts.push('Ctrl');
+  if (e.altKey) parts.push('Alt');
+  if (e.shiftKey) parts.push('Shift');
+  if (e.metaKey) parts.push('Meta');
+
+  let keyName = key;
+  if (key === ' ') {
+    keyName = 'Space';
+  } else if (key.length === 1) {
+    keyName = key.toUpperCase();
+  }
+
+  parts.push(keyName);
+  const newShortcut = parts.join('+');
+  stopRecording(false, newShortcut);
+}
+
 /**
  * Setup event listeners for inputs
  */
 function setupListeners() {
+  // Dismiss toast on click
+  elements.toast.addEventListener('click', () => {
+    elements.toast.classList.remove('show');
+    if (toastTimeout) {
+      clearTimeout(toastTimeout);
+      toastTimeout = null;
+    }
+  });
+
+  // No close option for ytdlWarningBanner as per requirements
+
   // Save immediately on changes to options/dropdowns/switches
   const immediateSaveList = [
     elements.qualityCap,
@@ -212,13 +359,30 @@ function setupListeners() {
     elements.alwaysOnTop,
     elements.borderless,
     elements.fullscreen,
-    elements.forceWindow
+    elements.forceWindow,
+    elements.shortcutEnabled
   ];
 
   immediateSaveList.forEach(input => {
     input.addEventListener('change', () => {
       saveSettings();
     });
+  });
+
+  elements.shortcutEnabled.addEventListener('change', () => {
+    const enabled = elements.shortcutEnabled.checked;
+    if (enabled) {
+      elements.shortcutKeyRow.classList.remove('disabled');
+      elements.shortcutKeyBtn.disabled = false;
+    } else {
+      elements.shortcutKeyRow.classList.add('disabled');
+      elements.shortcutKeyBtn.disabled = true;
+      stopRecording(true);
+    }
+  });
+
+  elements.shortcutKeyBtn.addEventListener('click', () => {
+    startRecording();
   });
 
   // Debounce saves for keyboard input fields to prevent excessive storage writes
@@ -247,7 +411,7 @@ function setupListeners() {
     elements.spinnerContainer.classList.remove('hidden');
 
     try {
-      await new Promise((resolve, reject) => {
+      const res = await new Promise((resolve, reject) => {
         chrome.runtime.sendMessage({ type: 'PLAY_IN_MPV', url: currentTabUrl }, (res) => {
           if (chrome.runtime.lastError) {
             reject(new Error(chrome.runtime.lastError.message));
@@ -275,4 +439,5 @@ document.addEventListener('DOMContentLoaded', () => {
   loadSettings();
   setupListeners();
   initPlayCurrentTab();
+  checkSystemStatus();
 });

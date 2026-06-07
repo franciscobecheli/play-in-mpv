@@ -35,10 +35,43 @@ const DEFAULT_SETTINGS = {
   fullscreen: false,
   forceWindow: true,
   mpvPath: '',
-  customFlags: ''
+  customFlags: '',
+  shortcutEnabled: true,
+  shortcutKey: 'Alt+P'
 };
 
+const DRM_RULES = [
+  { name: 'Netflix', pattern: /netflix\.com/i },
+  { name: 'Prime Video', pattern: /(primevideo\.com|amazon\.[a-z\.]+\/(gp\/video|show|video))/i },
+  { name: 'Disney+', pattern: /disneyplus\.com/i },
+  { name: 'Max', pattern: /max\.com/i },
+  { name: 'Hulu', pattern: /hulu\.com/i },
+  { name: 'Apple TV', pattern: /(tv\.apple\.com|apple\.com\/apple-tv-plus)/i },
+  { name: 'Paramount+', pattern: /paramountplus\.com/i },
+  { name: 'Peacock', pattern: /peacocktv\.com/i }
+];
+
+function isValidUrl(urlStr) {
+  try {
+    const url = new URL(urlStr);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      return false;
+    }
+    for (const rule of DRM_RULES) {
+      if (rule.pattern.test(urlStr)) {
+        return false;
+      }
+    }
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 function launchMpv(url) {
+  if (!isValidUrl(url)) {
+    return Promise.reject(new Error('Invalid or unsupported URL'));
+  }
   const cleanUrl = cleanYoutubeUrl(url);
   return new Promise((resolve, reject) => {
     chrome.storage.local.get(DEFAULT_SETTINGS, (settings) => {
@@ -89,19 +122,11 @@ function launchMpv(url) {
         flags.push('--force-window=immediate');
       }
 
-      // Custom flags
-      if (settings.customFlags) {
-        const customList = settings.customFlags
-          .split(/[\n\s]+/)
-          .map(s => s.trim())
-          .filter(s => s.length > 0);
-        flags.push(...customList);
-      }
-
       const payload = {
         url: cleanUrl,
         mpv_path: settings.mpvPath || null,
-        flags: flags
+        flags: flags,
+        custom_flags: settings.customFlags || ''
       };
 
       chrome.runtime.sendNativeMessage(NATIVE_HOST, payload, (res) => {
@@ -115,8 +140,31 @@ function launchMpv(url) {
   });
 }
 
-// Handle messages from content scripts
+// Handle messages from content scripts / popups
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message.type === 'CHECK_STATUS') {
+    (async () => {
+      try {
+        chrome.storage.local.get(DEFAULT_SETTINGS, (settings) => {
+          const payload = {
+            type: 'CHECK_STATUS',
+            mpv_path: settings.mpvPath || null
+          };
+          chrome.runtime.sendNativeMessage(NATIVE_HOST, payload, (res) => {
+            if (chrome.runtime.lastError) {
+              sendResponse({ ok: false, error: chrome.runtime.lastError.message });
+            } else {
+              sendResponse({ ok: true, response: res });
+            }
+          });
+        });
+      } catch (err) {
+        sendResponse({ ok: false, error: err.message });
+      }
+    })();
+    return true; // Keep message channel open for async sendResponse
+  }
+
   if (message.type !== 'PLAY_IN_MPV') return false;
 
   (async () => {
