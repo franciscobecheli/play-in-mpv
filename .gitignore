@@ -7,4 +7,6 @@ node_modules/
 .agents/
 skills-lock.json
 CHROMEWEBSTORE.md
+*.zip
+
 
