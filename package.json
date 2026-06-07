@@ -1,0 +1,12 @@
+{
+  "name": "play-in-mpv-tests",
+  "version": "0.1.0",
+  "description": "Tests for Play in MPV chrome extension",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  }
+}
