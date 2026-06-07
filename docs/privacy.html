@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Privacy Policy for Play in MPV Chrome Extension. Learn how your data is handled.">
+  <title>Privacy Policy — Play in MPV</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #09090b;
+      --bg-card: rgba(20, 20, 25, 0.6);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --text-main: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --accent: #ff0033;
+      --accent-glow: rgba(255, 0, 51, 0.15);
+      --accent-hover: #ff1a4a;
+      --font-heading: 'Outfit', 'Plus Jakarta Sans', -apple-system, sans-serif;
+      --font-body: 'Plus Jakarta Sans', -apple-system, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(255, 0, 51, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.04) 0%, transparent 40%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      font-family: var(--font-body);
+      line-height: 1.6;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    /* Header Section */
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .logo-container {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 72px;
+      height: 72px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      backdrop-filter: blur(8px);
+      color: var(--accent);
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+    }
+
+    h1 {
+      font-family: var(--font-heading);
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+      background: linear-gradient(to right, #ffffff, #d4d4d8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    /* Card Layout */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      margin-bottom: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent), #e11d48);
+    }
+
+    h2 {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      letter-spacing: -0.01em;
+      color: #ffffff;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+    }
+
+    h2:first-of-type {
+      margin-top: 0;
+    }
+
+    p {
+      color: var(--text-muted);
+      font-size: 1rem;
+      margin-bottom: 16px;
+    }
+
+    ul {
+      margin-left: 20px;
+      margin-bottom: 16px;
+      color: var(--text-muted);
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    .meta-date {
+      font-size: 0.9rem;
+      color: var(--accent-hover);
+      font-weight: 500;
+      margin-bottom: 24px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    footer {
+      text-align: center;
+      padding: 32px 0;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border-color);
+      margin-top: 48px;
+    }
+
+    footer a {
+      color: var(--accent-hover);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 640px) {
+      body {
+        padding: 24px 12px;
+      }
+      .card {
+        padding: 24px 16px;
+      }
+      h1 {
+        font-size: 2rem;
+      }
+      .logo-container {
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+      }
+      .logo-icon {
+        width: 32px;
+        height: 32px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="logo-container">
+        <svg class="logo-icon" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+          <rect x="5" y="8" width="26" height="17" rx="3" fill="none" stroke="currentColor" stroke-width="2.2"/>
+          <polygon points="14,12 14,21 23,16.5" fill="currentColor"/>
+          <line x1="18" y1="25" x2="18" y2="28" stroke="currentColor" stroke-width="2.2"/>
+          <line x1="12" y1="28" x2="24" y2="28" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h1>Privacy Policy</h1>
+      <p class="subtitle">Your privacy is respected. Play in MPV does not collect or transmit any of your personal data.</p>
+    </header>
+
+    <!-- Main Content Card -->
+    <div class="card">
+      <div class="meta-date">Last Updated: June 7, 2026</div>
+
+      <h2>1. Overview</h2>
+      <p><strong>Play in MPV</strong> is a browser extension designed to let you play YouTube videos in your local <code>mpv</code> media player. We are committed to protecting your privacy. This policy explains what information is used by the extension and how it is processed.</p>
+
+      <h2>2. Data Collection</h2>
+      <p><strong>We do not collect, store, or transmit any personal data or browsing history.</strong></p>
+      <ul>
+        <li>No user accounts or sign-ups are required.</li>
+        <li>No analytics, telemetry, tracking scripts, or advertising networks are used.</li>
+        <li>No cookies or external site data are read or sent to remote servers (with the exception of local communication with your own device).</li>
+      </ul>
+
+      <h2>3. Permissions and Data Usage</h2>
+      <p>The extension requests specific browser permissions to operate. All activities associated with these permissions are executed strictly locally on your device:</p>
+      <ul>
+        <li><strong><code>nativeMessaging</code></strong>: Allows the extension to communicate with the local Python bridge script (native messaging host) to launch <code>mpv</code> on your machine.</li>
+        <li><strong><code>contextMenus</code></strong>: Used to add the "Open Link in MPV" right-click fallback option on YouTube thumbnails and video links.</li>
+        <li><strong><code>storage</code></strong>: Used to store extension preferences locally in your browser (e.g., custom flags, video quality cap, window styles, and keyboard shortcuts).</li>
+        <li><strong><code>activeTab</code></strong>: Used to read the URL and page title of your current active tab only when you explicitly click the "Play current tab" button in the popup panel.</li>
+        <li><strong>Host Permissions (<code>https://www.youtube.com/*</code>)</strong>: Used to inject the in-player control bar button and thumbnail overlay buttons on YouTube pages.</li>
+      </ul>
+
+      <h2>4. Changes to This Policy</h2>
+      <p>We may update this privacy policy from time to time. Any changes will be posted on this page and reflected in the "Last Updated" date above.</p>
+
+      <h2>5. Contact</h2>
+      <p>If you have any questions or feedback regarding this privacy policy, please contact Francisco Becheli at <a href="mailto:contact@franciscobecheli.dev" style="color: var(--accent-hover); text-decoration: none;">contact@franciscobecheli.dev</a> or open an issue on our <a href="https://github.com/franciscobecheli/play-in-mpv" target="_blank" style="color: var(--accent-hover); text-decoration: none;">GitHub project page</a>.</p>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <p>Back to <a href="index.html">Setup Guide</a> | View source on <a href="https://github.com/franciscobecheli/play-in-mpv" target="_blank">GitHub</a>.</p>
+    </footer>
+  </div>
+</body>
+</html>
