@@ -254,6 +254,11 @@ select:focus {
   box-shadow: 0 0 0 3px var(--yt-blue-glow);
 }
 
+select option {
+  background-color: #1f1f1f;
+  color: var(--text-primary);
+}
+
 .select-arrow {
   position: absolute;
   top: 50%;
