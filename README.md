@@ -2,14 +2,13 @@
 
 Play in MPV is a modern Chrome and Chromium-based browser extension that allows you to seamlessly launch your local `mpv` player directly from YouTube. Watch videos with custom quality caps, hardware acceleration, playback resume, and session syncing—all outside the browser.
 
-Official Setup Guide: [Setup & Installation Guide](https://franciscobecheli.github.io/play-in-mpv/docs/)
+Official Setup Guide: [Setup & Installation Guide](https://franciscobecheli.github.io/play-in-mpv/)
 
 ---
 
 ## Features
 
 - **YouTube UI Integration**: Custom native-style MPV button injected directly into the YouTube player control bar.
-- **Thumbnail Overlays**: Quick-play overlay buttons on YouTube video thumbnails (home, sidebar, search).
 - **Context Menu Fallback**: Right-click any video link or thumbnail and select "Open Link in MPV" to bypass any YouTube UI layout updates.
 - **Customizable Shortcut**: Trigger playback instantly using keyboard shortcuts (default: `Alt+P`).
 - **Sleek Options UI**: Vibrant glassmorphic configuration panel to cap video resolution, enable hardware decoding (`--hwdec`), auto-pause the YouTube player, toggle window modes (fullscreen, always-on-top, borderless), and pass custom command-line flags.
@@ -27,6 +26,8 @@ To play stream links, the extension uses a local Python bridge (native host) tha
 ---
 
 ## Installation
+
+> ℹ️ **End-Users**: If you are installing the official extension from the Chrome Web Store, please use our [Official Setup Guide](https://franciscobecheli.github.io/play-in-mpv/) for a streamlined, one-click installation flow. The steps below are for developers, sideloaders, and contributors.
 
 Follow these steps to install the browser extension and set up the local native messaging bridge.
 

@@ -82,6 +82,7 @@
       margin-bottom: 12px;
       background: linear-gradient(to right, #ffffff, #d4d4d8);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
@@ -446,19 +447,6 @@
       <h1>Play in MPV Setup</h1>
       <p class="subtitle">Complete the one-time local bridge setup to connect the browser extension with your MPV player.</p>
     </header>
-    <!-- Extension ID Info Card -->
-    <div class="card" style="margin-bottom: 24px;">
-      <h2 style="margin-top: 0; display: flex; align-items: center; gap: 12px;">
-        <svg class="icon" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-        Finding Your Extension ID
-      </h2>
-      <p style="margin-bottom: 12px;">The installer needs your <strong>Extension ID</strong> — a 32-character string assigned by Chrome — to register the native host. Here's how to find it:</p>
-      <ol style="margin-left: 20px; color: var(--text-muted); margin-bottom: 0;">
-        <li style="margin-bottom: 6px;">Open Chrome and navigate to <code>chrome://extensions</code>.</li>
-        <li style="margin-bottom: 6px;">Enable <strong>Developer mode</strong> using the toggle in the top-right corner.</li>
-        <li>Find <strong>Play in MPV</strong> in the list and copy the ID shown below its name (e.g., <code>oblgkefhfl...</code>).</li>
-      </ol>
-    </div>
 
     <!-- Main Card Setup -->
     <div class="card">
@@ -491,17 +479,16 @@
             <p class="download-title">Download the Host Package</p>
             <p class="download-desc">A minimal ZIP containing only the files needed to register the native host bridge.</p>
             <a href="https://github.com/franciscobecheli/play-in-mpv/releases/latest/download/play-in-mpv-host.zip" class="btn">
-              <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2-2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Download Host Package
             </a>
           </div>
 
           <ul class="steps">
             <li class="step-item">
-              <div class="step-title">Ensure Requirements are Installed</div>
+              <div class="step-title">Ensure Requirements are Installed (If Missing)</div>
               <div class="step-desc">
-                Make sure you have <strong>MPV</strong>, <strong>yt-dlp</strong>, and <strong>Python 3</strong> installed.
-                You can install them quickly using the built-in Windows Package Manager (<code>winget</code>) in Command Prompt or PowerShell:
+                If you already have <strong>MPV</strong>, <strong>yt-dlp</strong>, and <strong>Python 3</strong> installed on your system path, you can skip this step. Otherwise, you can install them quickly using the built-in Windows Package Manager (<code>winget</code>) in Command Prompt or PowerShell:
               </div>
               <div class="code-container">
                 <button class="copy-btn" onclick="copyCode(this)">
@@ -569,8 +556,8 @@ python --version</div>
 
           <ul class="steps">
             <li class="step-item">
-              <div class="step-title">Install System Requirements</div>
-              <div class="step-desc">Install <code>mpv</code>, <code>yt-dlp</code>, and <code>python3</code>. We recommend using <a href="https://brew.sh/" target="_blank" style="color:var(--accent-hover);">Homebrew</a>:</div>
+              <div class="step-title">Install System Requirements (If Missing)</div>
+              <div class="step-desc">If you already have <code>mpv</code>, <code>yt-dlp</code>, and <code>python3</code> installed on your system path, you can skip this step. Otherwise, we recommend installing them using <a href="https://brew.sh/" target="_blank" style="color:var(--accent-hover);">Homebrew</a>:</div>
               <div class="code-container">
                 <button class="copy-btn" onclick="copyCode(this)">
                   <svg class="icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
@@ -615,15 +602,15 @@ python3 install.py</div>
             <p class="download-title">Download the Host Package</p>
             <p class="download-desc">A minimal ZIP containing only the files needed to register the native host bridge.</p>
             <a href="https://github.com/franciscobecheli/play-in-mpv/releases/latest/download/play-in-mpv-host.zip" class="btn">
-              <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2-2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Download Host Package
             </a>
           </div>
 
           <ul class="steps">
             <li class="step-item">
-              <div class="step-title">Install System Requirements</div>
-              <div class="step-desc">Use your package manager to install <code>mpv</code>, <code>yt-dlp</code>, and <code>python3</code> (example for Debian/Ubuntu):</div>
+              <div class="step-title">Install System Requirements (If Missing)</div>
+              <div class="step-desc">If you already have <code>mpv</code>, <code>yt-dlp</code>, and <code>python3</code> installed on your system path, you can skip this step. Otherwise, use your package manager to install them (example for Debian/Ubuntu):</div>
               <div class="code-container">
                 <button class="copy-btn" onclick="copyCode(this)">
                   <svg class="icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
@@ -685,11 +672,26 @@ python3 install.py</div>
         <div class="faq-question">How do I uninstall the native bridge?</div>
         <div class="faq-answer">You can easily remove all trace files and registry entries by running the uninstaller script. In a terminal, run: <code>python3 uninstall.py</code> (or <code>python uninstall.py</code> on Windows) located inside the <code>host</code> directory.</div>
       </div>
+
+      <div class="faq-item">
+        <div class="faq-question">I loaded the extension manually (unpacked/developer mode). How do I install the host?</div>
+        <div class="faq-answer">
+          If you are not using the Chrome Web Store version, you need to provide your custom 32-character Extension ID to the installer:
+          <ol style="margin: 8px 0 0 20px; display: flex; flex-direction: column; gap: 4px;">
+            <li style="margin-bottom: 4px;">Go to <code>chrome://extensions</code> and enable <strong>Developer mode</strong> (top-right).</li>
+            <li style="margin-bottom: 4px;">Copy the 32-character ID string shown under the Play in MPV card.</li>
+            <li>Run the installer with your ID:
+              <br>• On Windows, run <code>install.bat</code> and paste your ID when prompted.
+              <br>• On macOS/Linux, run <code>python3 install.py YOUR_EXTENSION_ID</code> in terminal.
+            </li>
+          </ol>
+        </div>
+      </div>
     </div>
 
     <!-- Footer -->
     <footer>
-      <p>Play in MPV is open-source. View code and report issues on <a href="https://github.com/franciscobecheli/play-in-mpv" target="_blank">GitHub</a>.</p>
+      <p>Play in MPV is open-source. View code and report issues on <a href="https://github.com/franciscobecheli/play-in-mpv" target="_blank">GitHub</a>. Read our <a href="privacy.html">Privacy Policy</a>.</p>
     </footer>
   </div>
 
