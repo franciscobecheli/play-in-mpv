@@ -76,24 +76,31 @@ sudo apt update && sudo apt install mpv yt-dlp python3
 ```
 
 ---
-
+ 
 ### Step 3: Install the Native Host Bridge
-
+ 
 To connect the browser extension to your local `mpv` player, register the bridge script.
-
-#### Windows
-1. Open the repository folder and navigate to the `host` directory.
-2. Double-click `install.bat`.
-3. A command prompt window will open. Paste your **Extension ID** from **Step 1** and press Enter.
-
-#### macOS & Linux
-Run the python installer script from your terminal:
-```bash
-cd host
-python3 install.py <YOUR_EXTENSION_ID>
-```
-*(Replace `<YOUR_EXTENSION_ID>` with the ID copied in Step 1)*
-
+ 
+#### 1. Download the Host Package
+Instead of downloading the entire repository, you can download the lightweight host-only zip file containing only the installer and host bridge:
+- **Download**: [play-in-mpv-host.zip](https://github.com/franciscobecheli/play-in-mpv/releases/latest/download/play-in-mpv-host.zip)
+- Extract the ZIP archive to a permanent directory on your machine (e.g. `C:\Users\YourName\play-in-mpv` or `~/play-in-mpv-host`). Do not move this folder after installing, as the browser executes the scripts directly from it.
+ 
+#### 2. Run the Installer
+ 
+##### Windows
+1. Open the extracted folder, navigate to the `play-in-mpv-host` directory, and double-click **`install.bat`**.
+2. A command prompt will open. If you installed the extension via the Chrome Web Store, simply press **Enter** to register using the default ID. (If using a local unpacked developer version, paste your 32-character Extension ID and press Enter).
+ 
+##### macOS & Linux
+1. Open a terminal in the extracted `play-in-mpv-host` directory.
+2. Run the installer script:
+   ```bash
+   python3 install.py
+   ```
+   *(If you are using a local developer version, specify the ID as an argument: `python3 install.py <YOUR_EXTENSION_ID>`)*
+3. Press **Enter** at the prompt to confirm setup with the default Web Store ID.
+ 
 ---
 
 ### Step 4: Verification & Playback

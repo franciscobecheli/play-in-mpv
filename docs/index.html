@@ -485,15 +485,14 @@
 
       <!-- Tab Content Area -->
       <div class="tab-content">
-        
-        <!-- WINDOWS SETUP -->
+           <!-- WINDOWS SETUP -->
         <div class="tab-pane active" id="win-setup">
           <div class="download-box">
             <p class="download-title">Download the Host Package</p>
-            <p class="download-desc">Contains the host script, uninstaller, and the double-clickable Windows installer.</p>
-            <a href="https://github.com/franciscobecheli/play-in-mpv/archive/refs/heads/main.zip" class="btn">
-              <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Download ZIP Archive
+            <p class="download-desc">A minimal ZIP containing only the files needed to register the native host bridge.</p>
+            <a href="https://github.com/franciscobecheli/play-in-mpv/releases/latest/download/play-in-mpv-host.zip" class="btn">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2-2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download Host Package
             </a>
           </div>
 
@@ -545,16 +544,8 @@ python --version</div>
             <li class="step-item">
               <div class="step-title">Run the Installer</div>
               <div class="step-desc">
-                Open the extracted folder, navigate to the <code>host</code> subfolder, and double-click <strong><code>install.bat</code></strong>.
-                <br>It will open a terminal and prompt you to input your Chrome Extension ID.
-              </div>
-            </li>
-
-            <li class="step-item">
-              <div class="step-title">Find your Extension ID</div>
-              <div class="step-desc">
-                Open Chrome and go to <code>chrome://extensions</code>. Ensure <strong>Developer mode</strong> (top-right) is toggled on.
-                Find the <strong>Play in MPV</strong> extension and copy the 32-character ID string (e.g., <code>oblgkefhflpldmjdbm...</code>) and paste it into the installer prompt.
+                Open the extracted folder, navigate to the <code>play-in-mpv-host</code> subfolder, and double-click <strong><code>install.bat</code></strong>.
+                <br>It will open a terminal and prompt you to register the extension. If you installed the extension via the Chrome Web Store, just press <strong>Enter</strong> to use the default configuration.
               </div>
             </li>
 
@@ -567,6 +558,15 @@ python --version</div>
 
         <!-- MACOS SETUP -->
         <div class="tab-pane" id="mac-setup">
+          <div class="download-box">
+            <p class="download-title">Download the Host Package</p>
+            <p class="download-desc">A minimal ZIP containing only the files needed to register the native host bridge.</p>
+            <a href="https://github.com/franciscobecheli/play-in-mpv/releases/latest/download/play-in-mpv-host.zip" class="btn">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download Host Package
+            </a>
+          </div>
+
           <ul class="steps">
             <li class="step-item">
               <div class="step-title">Install System Requirements</div>
@@ -581,27 +581,24 @@ python --version</div>
             </li>
 
             <li class="step-item">
-              <div class="step-title">Clone or Download the Project</div>
-              <div class="step-desc">Clone the repository to a local folder where you intend to keep it:</div>
-              <div class="code-container">
-                <button class="copy-btn" onclick="copyCode(this)">
-                  <svg class="icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                  Copy
-                </button>
-                <div class="code-content">git clone https://github.com/franciscobecheli/play-in-mpv.git</div>
-              </div>
+              <div class="step-title">Extract the Host Package</div>
+              <div class="step-desc">Extract the downloaded ZIP folder to a permanent directory on your machine. Keep the folder there, as Chrome will run the scripts directly from it.</div>
             </li>
 
             <li class="step-item">
               <div class="step-title">Run the Python Installer</div>
-              <div class="step-desc">Navigate to the folder and run the installer script, passing your copied 32-character Extension ID as an argument:</div>
+              <div class="step-desc">Open your Terminal, navigate to the extracted folder, and run the installer:</div>
               <div class="code-container">
                 <button class="copy-btn" onclick="copyCode(this)">
                   <svg class="icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                   Copy
                 </button>
-                <div class="code-content">cd play-in-mpv/host
-python3 install.py &lt;YOUR_EXTENSION_ID&gt;</div>
+                <div class="code-content">cd play-in-mpv-host
+python3 install.py</div>
+              </div>
+              <div class="step-desc" style="margin-top: 14px;">
+                Press <strong>Enter</strong> at the prompt to use the default Chrome Web Store extension.
+                <br><em>(If you are using a local developer version, run <code>python3 install.py &lt;YOUR_EXTENSION_ID&gt;</code> instead)</em>
               </div>
             </li>
 
@@ -614,6 +611,15 @@ python3 install.py &lt;YOUR_EXTENSION_ID&gt;</div>
 
         <!-- LINUX SETUP -->
         <div class="tab-pane" id="linux-setup">
+          <div class="download-box">
+            <p class="download-title">Download the Host Package</p>
+            <p class="download-desc">A minimal ZIP containing only the files needed to register the native host bridge.</p>
+            <a href="https://github.com/franciscobecheli/play-in-mpv/releases/latest/download/play-in-mpv-host.zip" class="btn">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2-2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download Host Package
+            </a>
+          </div>
+
           <ul class="steps">
             <li class="step-item">
               <div class="step-title">Install System Requirements</div>
@@ -628,27 +634,24 @@ python3 install.py &lt;YOUR_EXTENSION_ID&gt;</div>
             </li>
 
             <li class="step-item">
-              <div class="step-title">Clone or Download the Project</div>
-              <div class="step-desc">Clone the repository to a permanent directory:</div>
-              <div class="code-container">
-                <button class="copy-btn" onclick="copyCode(this)">
-                  <svg class="icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                  Copy
-                </button>
-                <div class="code-content">git clone https://github.com/franciscobecheli/play-in-mpv.git</div>
-              </div>
+              <div class="step-title">Extract the Host Package</div>
+              <div class="step-desc">Extract the downloaded ZIP folder to a permanent directory on your machine. Keep the folder there, as Chrome will run the scripts directly from it.</div>
             </li>
 
             <li class="step-item">
               <div class="step-title">Run the Python Installer</div>
-              <div class="step-desc">Navigate to the host directory and run `install.py`:</div>
+              <div class="step-desc">Open your Terminal, navigate to the extracted directory, and run `install.py`:</div>
               <div class="code-container">
                 <button class="copy-btn" onclick="copyCode(this)">
                   <svg class="icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                   Copy
                 </button>
-                <div class="code-content">cd play-in-mpv/host
-python3 install.py &lt;YOUR_EXTENSION_ID&gt;</div>
+                <div class="code-content">cd play-in-mpv-host
+python3 install.py</div>
+              </div>
+              <div class="step-desc" style="margin-top: 14px;">
+                Press <strong>Enter</strong> at the prompt to use the default Chrome Web Store extension.
+                <br><em>(If you are using a local developer version, run <code>python3 install.py &lt;YOUR_EXTENSION_ID&gt;</code> instead)</em>
               </div>
             </li>
 
@@ -658,7 +661,6 @@ python3 install.py &lt;YOUR_EXTENSION_ID&gt;</div>
             </li>
           </ul>
         </div>
-
       </div>
     </div>
 
