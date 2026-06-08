@@ -11,6 +11,9 @@ import sys
 import json
 import re
 
+# Default Chrome Web Store extension ID (replace this placeholder when published)
+DEFAULT_EXTENSION_ID = "YOUR_CHROME_WEB_STORE_ID_HERE"
+
 
 def main():
     # 1. Get Extension ID
@@ -20,8 +23,21 @@ def main():
     else:
         print("Play in MPV Native Messaging Host Installer")
         print("------------------------------------------")
+        
+        has_default = (DEFAULT_EXTENSION_ID and 
+                       DEFAULT_EXTENSION_ID != "YOUR_CHROME_WEB_STORE_ID_HERE" and 
+                       re.match(r'^[a-z]{32}$', DEFAULT_EXTENSION_ID))
+        
+        prompt = "Enter your Chrome Extension ID: "
+        if has_default:
+            prompt = f"Enter your Chrome Extension ID [default: {DEFAULT_EXTENSION_ID}]: "
+            
         try:
-            extension_id = input("Enter your Chrome Extension ID: ").strip()
+            user_input = input(prompt).strip()
+            if not user_input and has_default:
+                extension_id = DEFAULT_EXTENSION_ID
+            else:
+                extension_id = user_input
         except (KeyboardInterrupt, EOFError):
             print("\nInstallation cancelled.")
             sys.exit(1)
