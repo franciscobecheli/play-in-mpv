@@ -12,7 +12,7 @@ import json
 import re
 
 # Default Chrome Web Store extension ID (replace this placeholder when published)
-DEFAULT_EXTENSION_ID = "YOUR_CHROME_WEB_STORE_ID_HERE"
+DEFAULT_EXTENSION_ID = "njlpgpceeekkodgehpehlngpoeilcncf"
 
 
 def main():
