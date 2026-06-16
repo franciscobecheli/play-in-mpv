@@ -1,6 +1,6 @@
 {
   "name": "play-in-mpv-tests",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Tests for Play in MPV chrome extension",
   "scripts": {
     "test": "jest"
