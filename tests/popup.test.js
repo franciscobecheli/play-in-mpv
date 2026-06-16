@@ -28,9 +28,14 @@ describe('Popup Settings UI', () => {
       },
       tabs: {
         query: jest.fn((queryInfo, cb) => {
-          const tabs = [{ url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }];
+          const tabs = [{ id: 1, url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }];
           if (typeof cb === 'function') cb(tabs);
           return Promise.resolve(tabs);
+        }),
+        sendMessage: jest.fn((tabId, msg, cb) => {
+          const response = { currentTime: 120 };
+          if (typeof cb === 'function') cb(response);
+          return Promise.resolve(response);
         })
       },
       runtime: {
@@ -82,6 +87,7 @@ describe('Popup Settings UI', () => {
         qualityCap: '1080p',
         hwdec: 'disabled',
         savePosition: false,
+        startFromCurrentTime: false,
         autoPause: true,
         alwaysOnTop: true,
         borderless: true,
@@ -106,6 +112,7 @@ describe('Popup Settings UI', () => {
       expect(document.getElementById('qualityCap').value).toBe('1080p');
       expect(document.getElementById('hwdec').value).toBe('disabled');
       expect(document.getElementById('savePosition').checked).toBe(false);
+      expect(document.getElementById('startFromCurrentTime').checked).toBe(false);
       expect(document.getElementById('alwaysOnTop').checked).toBe(true);
       expect(document.getElementById('mpvPath').value).toBe('/usr/bin/mpv');
       expect(document.getElementById('customFlags').value).toBe('--volume=90');
@@ -122,6 +129,14 @@ describe('Popup Settings UI', () => {
 
       expect(chrome.storage.local.set).toHaveBeenCalledWith(
         expect.objectContaining({ qualityCap: '720p' })
+      );
+
+      const startToggle = document.getElementById('startFromCurrentTime');
+      startToggle.checked = false;
+      startToggle.dispatchEvent(new Event('change'));
+
+      expect(chrome.storage.local.set).toHaveBeenCalledWith(
+        expect.objectContaining({ startFromCurrentTime: false })
       );
     });
 
@@ -187,11 +202,17 @@ describe('Popup Settings UI', () => {
       expect(warningText.textContent).toContain('DRM protected');
     });
 
-    it('should launch current tab in MPV when clicking the Play button', async () => {
+    it('should launch current tab in MPV when clicking the Play button and query current position', async () => {
       chrome.tabs.query.mockImplementation((info, cb) => {
-        const tabs = [{ url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }];
+        const tabs = [{ id: 1, url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }];
         if (typeof cb === 'function') cb(tabs);
         return Promise.resolve(tabs);
+      });
+
+      chrome.tabs.sendMessage.mockImplementation((tabId, msg, cb) => {
+        const response = { currentTime: 120.5 };
+        if (typeof cb === 'function') cb(response);
+        return Promise.resolve(response);
       });
 
       document.dispatchEvent(new Event('DOMContentLoaded'));
@@ -200,13 +221,45 @@ describe('Popup Settings UI', () => {
       const playBtn = document.getElementById('playCurrentTabBtn');
       playBtn.dispatchEvent(new Event('click'));
 
+      // Verify loader spinner class is added immediately
+      expect(playBtn.classList.contains('loading')).toBe(true);
+
+      // Wait for async message passing
+      await new Promise(process.nextTick);
+      // Extra tick for the nested sendMessage promise
+      await new Promise(process.nextTick);
+
+      expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(1, { type: 'GET_CURRENT_TIME' });
       expect(chrome.runtime.sendMessage).toHaveBeenCalledWith(
-        { type: 'PLAY_IN_MPV', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+        { type: 'PLAY_IN_MPV', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', startTime: 120.5 },
         expect.any(Function)
       );
+    });
 
-      // Verify loader spinner class is added
-      expect(playBtn.classList.contains('loading')).toBe(true);
+    it('should launch current tab with startTime: null if query message fails', async () => {
+      chrome.tabs.query.mockImplementation((info, cb) => {
+        const tabs = [{ id: 1, url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }];
+        if (typeof cb === 'function') cb(tabs);
+        return Promise.resolve(tabs);
+      });
+
+      chrome.tabs.sendMessage.mockImplementation((tabId, msg, cb) => {
+        return Promise.reject(new Error('Tab closed'));
+      });
+
+      document.dispatchEvent(new Event('DOMContentLoaded'));
+      await new Promise(process.nextTick);
+
+      const playBtn = document.getElementById('playCurrentTabBtn');
+      playBtn.dispatchEvent(new Event('click'));
+
+      // Wait for async message passing
+      await new Promise(process.nextTick);
+
+      expect(chrome.runtime.sendMessage).toHaveBeenCalledWith(
+        { type: 'PLAY_IN_MPV', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', startTime: null },
+        expect.any(Function)
+      );
     });
   });
 

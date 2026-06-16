@@ -7,6 +7,7 @@ describe('Content Script', () => {
   let attemptInjection;
   let launchCurrentVideo;
   let storageOnChangedListener;
+  let contentOnMessageListener;
 
   let originalAddEventListener;
   let originalDocAddEventListener;
@@ -76,6 +77,11 @@ describe('Content Script', () => {
         sendMessage: jest.fn((payload, cb) => {
           cb({ ok: true });
         }),
+        onMessage: {
+          addListener: jest.fn((listener) => {
+            contentOnMessageListener = listener;
+          })
+        },
         lastError: null
       }
     };
@@ -207,7 +213,7 @@ describe('Content Script', () => {
       launchCurrentVideo();
 
       expect(chrome.runtime.sendMessage).toHaveBeenCalledWith(
-        { type: 'PLAY_IN_MPV', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+        { type: 'PLAY_IN_MPV', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', startTime: null },
         expect.any(Function)
       );
     });
@@ -322,7 +328,7 @@ describe('Content Script', () => {
         window.dispatchEvent(event);
 
         expect(chrome.runtime.sendMessage).toHaveBeenCalledWith(
-          { type: 'PLAY_IN_MPV', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+          { type: 'PLAY_IN_MPV', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', startTime: null },
           expect.any(Function)
         );
       });
@@ -361,6 +367,47 @@ describe('Content Script', () => {
 
         expect(chrome.runtime.sendMessage).not.toHaveBeenCalled();
       });
+    });
+  });
+
+  describe('GET_CURRENT_TIME message handling', () => {
+    it('should return currentTime from video element if present', () => {
+      const video = document.createElement('video');
+      video.className = 'html5-main-video';
+      Object.defineProperty(video, 'currentTime', { value: 123.45, writable: true });
+      document.body.appendChild(video);
+
+      expect(contentOnMessageListener).toBeDefined();
+      const sendResponse = jest.fn();
+      const result = contentOnMessageListener({ type: 'GET_CURRENT_TIME' }, {}, sendResponse);
+
+      expect(result).toBe(true);
+      expect(sendResponse).toHaveBeenCalledWith({ currentTime: 123.45 });
+    });
+
+    it('should return null if video element is missing', () => {
+      expect(contentOnMessageListener).toBeDefined();
+      const sendResponse = jest.fn();
+      contentOnMessageListener({ type: 'GET_CURRENT_TIME' }, {}, sendResponse);
+      expect(sendResponse).toHaveBeenCalledWith({ currentTime: null });
+    });
+  });
+
+  describe('launchCurrentVideo with start time', () => {
+    it('should query video currentTime and pass it as startTime in PLAY_IN_MPV message', () => {
+      chrome.storage.local.get.mockImplementation((defaults, cb) => cb({ forceWindow: true }));
+      
+      const video = document.createElement('video');
+      video.className = 'html5-main-video';
+      Object.defineProperty(video, 'currentTime', { value: 240.5, writable: true });
+      document.body.appendChild(video);
+
+      launchCurrentVideo();
+
+      expect(chrome.runtime.sendMessage).toHaveBeenCalledWith(
+        { type: 'PLAY_IN_MPV', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', startTime: 240.5 },
+        expect.any(Function)
+      );
     });
   });
 });

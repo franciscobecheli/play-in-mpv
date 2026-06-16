@@ -10,8 +10,9 @@ const DEFAULT_SETTINGS = {
   qualityCap: 'best',
   hwdec: 'auto',
   savePosition: true,
+  startFromCurrentTime: true,
   autoPause: true,
-  alwaysOnTop: false,
+  alwaysOnTop: true,
   borderless: false,
   fullscreen: false,
   forceWindow: true,
@@ -26,6 +27,7 @@ const elements = {
   qualityCap: document.getElementById('qualityCap'),
   hwdec: document.getElementById('hwdec'),
   savePosition: document.getElementById('savePosition'),
+  startFromCurrentTime: document.getElementById('startFromCurrentTime'),
   autoPause: document.getElementById('autoPause'),
   alwaysOnTop: document.getElementById('alwaysOnTop'),
   borderless: document.getElementById('borderless'),
@@ -220,6 +222,7 @@ async function loadSettings() {
     elements.qualityCap.value = settings.qualityCap;
     elements.hwdec.value = settings.hwdec;
     elements.savePosition.checked = settings.savePosition;
+    elements.startFromCurrentTime.checked = settings.startFromCurrentTime;
     elements.autoPause.checked = settings.autoPause;
     elements.alwaysOnTop.checked = settings.alwaysOnTop;
     elements.borderless.checked = settings.borderless;
@@ -250,6 +253,7 @@ async function saveSettings() {
     qualityCap: elements.qualityCap.value,
     hwdec: elements.hwdec.value,
     savePosition: elements.savePosition.checked,
+    startFromCurrentTime: elements.startFromCurrentTime.checked,
     autoPause: elements.autoPause.checked,
     alwaysOnTop: elements.alwaysOnTop.checked,
     borderless: elements.borderless.checked,
@@ -355,6 +359,7 @@ function setupListeners() {
     elements.qualityCap,
     elements.hwdec,
     elements.savePosition,
+    elements.startFromCurrentTime,
     elements.autoPause,
     elements.alwaysOnTop,
     elements.borderless,
@@ -411,8 +416,23 @@ function setupListeners() {
     elements.spinnerContainer.classList.remove('hidden');
 
     try {
+      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      const activeTab = tabs && tabs[0];
+      
+      let startTime = null;
+      if (activeTab && activeTab.id && (currentTabUrl.includes('youtube.com/watch') || currentTabUrl.includes('youtube.com/shorts'))) {
+        try {
+          const response = await chrome.tabs.sendMessage(activeTab.id, { type: 'GET_CURRENT_TIME' });
+          if (response && typeof response.currentTime === 'number') {
+            startTime = response.currentTime;
+          }
+        } catch (e) {
+          // Content script not loaded or not responding, fail silently
+        }
+      }
+
       const res = await new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage({ type: 'PLAY_IN_MPV', url: currentTabUrl }, (res) => {
+        chrome.runtime.sendMessage({ type: 'PLAY_IN_MPV', url: currentTabUrl, startTime }, (res) => {
           if (chrome.runtime.lastError) {
             reject(new Error(chrome.runtime.lastError.message));
           } else if (res && !res.ok) {

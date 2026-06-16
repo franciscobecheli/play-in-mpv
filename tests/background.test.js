@@ -116,6 +116,7 @@ describe('Background Service Worker', () => {
           flags: [
             '--hwdec=auto',
             '--save-position-on-quit',
+            '--ontop',
             '--force-window=immediate'
           ],
           custom_flags: ''
@@ -259,6 +260,62 @@ describe('Background Service Worker', () => {
       );
       expect(chrome.runtime.sendNativeMessage).not.toHaveBeenCalled();
     });
+
+    it('should default startFromCurrentTime to true', () => {
+      expect(DEFAULT_SETTINGS.startFromCurrentTime).toBe(true);
+    });
+
+    it('should append --start flag if startFromCurrentTime is true and startTime is provided', async () => {
+      chrome.storage.local.get.mockImplementation((defaults, cb) => {
+        cb({
+          ...defaults,
+          startFromCurrentTime: true
+        });
+      });
+      chrome.runtime.sendNativeMessage.mockImplementation((host, payload, cb) => {
+        cb({ success: true });
+      });
+
+      await launchMpv('https://www.youtube.com/watch?v=dQw4w9WgXcQ', 150.7);
+
+      const payload = chrome.runtime.sendNativeMessage.mock.calls[0][1];
+      expect(payload.flags).toContain('--start=150');
+    });
+
+    it('should not append --start flag if startFromCurrentTime is false', async () => {
+      chrome.storage.local.get.mockImplementation((defaults, cb) => {
+        cb({
+          ...defaults,
+          startFromCurrentTime: false
+        });
+      });
+      chrome.runtime.sendNativeMessage.mockImplementation((host, payload, cb) => {
+        cb({ success: true });
+      });
+
+      await launchMpv('https://www.youtube.com/watch?v=dQw4w9WgXcQ', 150);
+
+      const payload = chrome.runtime.sendNativeMessage.mock.calls[0][1];
+      expect(payload.flags).not.toContain('--start=150');
+    });
+
+    it('should not append --start flag if startTime is not provided', async () => {
+      chrome.storage.local.get.mockImplementation((defaults, cb) => {
+        cb({
+          ...defaults,
+          startFromCurrentTime: true
+        });
+      });
+      chrome.runtime.sendNativeMessage.mockImplementation((host, payload, cb) => {
+        cb({ success: true });
+      });
+
+      await launchMpv('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+
+      const payload = chrome.runtime.sendNativeMessage.mock.calls[0][1];
+      const hasStart = payload.flags.some(f => f.startsWith('--start='));
+      expect(hasStart).toBe(false);
+    });
   });
 
   describe('onMessage Listener', () => {
@@ -291,6 +348,25 @@ describe('Background Service Worker', () => {
         ok: true,
         response: { success: true }
       });
+    });
+
+    it('should pass startTime to launchMpv and append --start flag', async () => {
+      chrome.storage.local.get.mockImplementation((defaults, cb) => cb(defaults));
+      chrome.runtime.sendNativeMessage.mockImplementation((host, payload, cb) => {
+        cb({ success: true });
+      });
+
+      const mockSendResponse = jest.fn();
+      messageListener(
+        { type: 'PLAY_IN_MPV', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', startTime: 120 },
+        {},
+        mockSendResponse
+      );
+
+      await new Promise(process.nextTick);
+
+      const payload = chrome.runtime.sendNativeMessage.mock.calls[0][1];
+      expect(payload.flags).toContain('--start=120');
     });
 
     it('should call sendResponse with ok: false if launchMpv fails', async () => {

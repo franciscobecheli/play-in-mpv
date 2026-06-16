@@ -193,8 +193,10 @@ function launchCurrentVideo() {
       }
 
       const startTime = Date.now();
+      const video = document.querySelector('.html5-main-video') || document.querySelector('video');
+      const videoTime = video ? video.currentTime : null;
 
-      chrome.runtime.sendMessage({ type: 'PLAY_IN_MPV', url }, (response) => {
+      chrome.runtime.sendMessage({ type: 'PLAY_IN_MPV', url, startTime: videoTime }, (response) => {
         if (showSpinner && btn) {
           const elapsed = Date.now() - startTime;
           const minDuration = 3500; // 3.5s minimum spinner show time
@@ -332,3 +334,16 @@ function handleKeyDown(e) {
 }
 
 window.addEventListener('keydown', handleKeyDown, { capture: true });
+
+// Listen for messages from popup
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === 'GET_CURRENT_TIME') {
+    const video = document.querySelector('.html5-main-video') || document.querySelector('video');
+    if (video) {
+      sendResponse({ currentTime: video.currentTime });
+    } else {
+      sendResponse({ currentTime: null });
+    }
+  }
+  return true;
+});

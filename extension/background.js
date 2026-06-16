@@ -29,8 +29,9 @@ const DEFAULT_SETTINGS = {
   qualityCap: 'best',
   hwdec: 'auto',
   savePosition: true,
+  startFromCurrentTime: true,
   autoPause: true,
-  alwaysOnTop: false,
+  alwaysOnTop: true,
   borderless: false,
   fullscreen: false,
   forceWindow: true,
@@ -68,7 +69,7 @@ function isValidUrl(urlStr) {
   }
 }
 
-function launchMpv(url) {
+function launchMpv(url, startTime = null) {
   if (!isValidUrl(url)) {
     return Promise.reject(new Error('Invalid or unsupported URL'));
   }
@@ -122,6 +123,11 @@ function launchMpv(url) {
         flags.push('--force-window=immediate');
       }
 
+      // Start time
+      if (settings.startFromCurrentTime && startTime !== null && startTime !== undefined) {
+        flags.push(`--start=${Math.floor(startTime)}`);
+      }
+
       const payload = {
         url: cleanUrl,
         mpv_path: settings.mpvPath || null,
@@ -169,7 +175,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
   (async () => {
     try {
-      const response = await launchMpv(message.url);
+      const response = await launchMpv(message.url, message.startTime);
       sendResponse({ ok: true, response });
     } catch (err) {
       console.error('[Play in MPV] Native messaging error:', err.message);
