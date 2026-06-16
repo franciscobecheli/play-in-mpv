@@ -430,6 +430,45 @@ select:focus + .select-arrow {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.play-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+.play-row .form-input {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.play-row .play-btn {
+  flex-shrink: 0;
+  width: 44px;
+  height: 38px;
+  padding: 0;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px var(--yt-red-glow);
+}
+
+.play-row .play-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 0, 51, 0.45);
+}
+
+.play-row .play-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.play-row .play-btn .play-icon {
+  width: 16px;
+  height: 16px;
+  margin-left: 2px;
+}
+
 .play-btn {
   position: relative;
   width: 100%;

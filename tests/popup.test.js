@@ -175,9 +175,11 @@ describe('Popup Settings UI', () => {
       const playBtn = document.getElementById('playCurrentTabBtn');
       const btnText = document.getElementById('playBtnText');
       const warning = document.getElementById('playWarning');
+      const videoUrlInput = document.getElementById('videoUrl');
 
       expect(playBtn.disabled).toBe(false);
-      expect(btnText.textContent).toBe('Play youtube.com in MPV');
+      expect(btnText.textContent).toBe('Play in MPV');
+      expect(videoUrlInput.value).toBe('https://youtu.be/dQw4w9WgXcQ');
       expect(warning.classList.contains('hidden')).toBe(true);
     });
 
@@ -195,9 +197,11 @@ describe('Popup Settings UI', () => {
       const btnText = document.getElementById('playBtnText');
       const warning = document.getElementById('playWarning');
       const warningText = document.getElementById('warningText');
+      const videoUrlInput = document.getElementById('videoUrl');
 
       expect(playBtn.disabled).toBe(true);
-      expect(btnText.textContent).toBe('Play netflix.com in MPV');
+      expect(btnText.textContent).toBe('Play in MPV');
+      expect(videoUrlInput.value).toBe('https://www.netflix.com/watch/123');
       expect(warning.classList.contains('hidden')).toBe(false);
       expect(warningText.textContent).toContain('DRM protected');
     });
@@ -231,7 +235,7 @@ describe('Popup Settings UI', () => {
 
       expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(1, { type: 'GET_CURRENT_TIME' });
       expect(chrome.runtime.sendMessage).toHaveBeenCalledWith(
-        { type: 'PLAY_IN_MPV', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', startTime: 120.5 },
+        { type: 'PLAY_IN_MPV', url: 'https://youtu.be/dQw4w9WgXcQ', startTime: 120.5 },
         expect.any(Function)
       );
     });
@@ -257,9 +261,38 @@ describe('Popup Settings UI', () => {
       await new Promise(process.nextTick);
 
       expect(chrome.runtime.sendMessage).toHaveBeenCalledWith(
-        { type: 'PLAY_IN_MPV', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', startTime: null },
+        { type: 'PLAY_IN_MPV', url: 'https://youtu.be/dQw4w9WgXcQ', startTime: null },
         expect.any(Function)
       );
+    });
+
+    it('should validate custom URL typed by user and enable/disable play button accordingly', async () => {
+      chrome.tabs.query.mockImplementation((info, cb) => {
+        const tabs = [{ url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }];
+        if (typeof cb === 'function') cb(tabs);
+        return Promise.resolve(tabs);
+      });
+
+      document.dispatchEvent(new Event('DOMContentLoaded'));
+      await new Promise(process.nextTick);
+
+      const playBtn = document.getElementById('playCurrentTabBtn');
+      const videoUrlInput = document.getElementById('videoUrl');
+      const warning = document.getElementById('playWarning');
+
+      // Change input to an invalid URL
+      videoUrlInput.value = 'invalid-url';
+      videoUrlInput.dispatchEvent(new Event('input'));
+
+      expect(playBtn.disabled).toBe(true);
+      expect(warning.classList.contains('hidden')).toBe(false);
+
+      // Change input to a valid custom URL
+      videoUrlInput.value = 'https://vimeo.com/12345';
+      videoUrlInput.dispatchEvent(new Event('input'));
+
+      expect(playBtn.disabled).toBe(false);
+      expect(warning.classList.contains('hidden')).toBe(true);
     });
   });
 

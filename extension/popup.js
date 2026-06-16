@@ -39,6 +39,7 @@ const elements = {
   toastText: document.getElementById('toastText'),
   toastSuccessIcon: document.getElementById('toastSuccessIcon'),
   toastErrorIcon: document.getElementById('toastErrorIcon'),
+  videoUrl: document.getElementById('videoUrl'),
   playCurrentTabBtn: document.getElementById('playCurrentTabBtn'),
   playBtnText: document.getElementById('playBtnText'),
   playWarning: document.getElementById('playWarning'),
@@ -114,7 +115,63 @@ function checkUrl(urlStr) {
     
     return { status: 'valid', hostname: url.hostname };
   } catch (e) {
-    return { status: 'invalid', message: 'Invalid active tab URL.' };
+    return { status: 'invalid', message: 'Invalid video URL.' };
+  }
+}
+
+/**
+ * Clean/format YouTube URLs to short link if applicable.
+ */
+function getYouTubeShortLink(urlStr) {
+  try {
+    const url = new URL(urlStr);
+    if (url.hostname.includes('youtube.com')) {
+      if (url.pathname === '/watch') {
+        const videoId = url.searchParams.get('v');
+        if (videoId) {
+          return `https://youtu.be/${videoId}`;
+        }
+      } else if (url.pathname.startsWith('/shorts/')) {
+        const videoId = url.pathname.split('/')[2];
+        if (videoId) {
+          return `https://youtu.be/${videoId}`;
+        }
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+  return urlStr;
+}
+
+/**
+ * Validate the current value of the videoUrl input and update play button & warning states.
+ */
+function validateInputUrl() {
+  const urlStr = elements.videoUrl.value.trim();
+  if (!urlStr) {
+    elements.playBtnText.textContent = 'Play in MPV';
+    elements.playCurrentTabBtn.disabled = true;
+    elements.playWarning.classList.add('hidden');
+    return;
+  }
+
+  const check = checkUrl(urlStr);
+  
+  if (check.status === 'invalid') {
+    elements.playBtnText.textContent = 'Play in MPV';
+    elements.playCurrentTabBtn.disabled = true;
+    elements.playWarning.classList.remove('hidden');
+    elements.warningText.textContent = check.message;
+  } else if (check.status === 'drm') {
+    elements.playBtnText.textContent = 'Play in MPV';
+    elements.playCurrentTabBtn.disabled = true;
+    elements.playWarning.classList.remove('hidden');
+    elements.warningText.textContent = check.message;
+  } else {
+    elements.playBtnText.textContent = 'Play in MPV';
+    elements.playCurrentTabBtn.disabled = false;
+    elements.playWarning.classList.add('hidden');
   }
 }
 
@@ -125,42 +182,20 @@ async function initPlayCurrentTab() {
   try {
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tabs || tabs.length === 0) {
-      elements.playBtnText.textContent = 'No active tab found';
-      elements.playCurrentTabBtn.disabled = true;
+      elements.videoUrl.value = '';
+      validateInputUrl();
       return;
     }
     
     const tab = tabs[0];
     currentTabUrl = tab.url || '';
     
-    const check = checkUrl(currentTabUrl);
-    
-    if (check.status === 'invalid') {
-      elements.playBtnText.textContent = 'Cannot play current tab';
-      elements.playCurrentTabBtn.disabled = true;
-      elements.playWarning.classList.remove('hidden');
-      elements.warningText.textContent = check.message;
-    } else if (check.status === 'drm') {
-      let displayHost = '';
-      try {
-        displayHost = new URL(currentTabUrl).hostname.replace('www.', '');
-      } catch (e) {
-        displayHost = 'current page';
-      }
-      elements.playBtnText.textContent = `Play ${displayHost} in MPV`;
-      elements.playCurrentTabBtn.disabled = true;
-      elements.playWarning.classList.remove('hidden');
-      elements.warningText.textContent = check.message;
-    } else {
-      const displayHost = check.hostname.replace('www.', '');
-      elements.playBtnText.textContent = `Play ${displayHost} in MPV`;
-      elements.playCurrentTabBtn.disabled = false;
-      elements.playWarning.classList.add('hidden');
-    }
+    elements.videoUrl.value = getYouTubeShortLink(currentTabUrl);
+    validateInputUrl();
   } catch (err) {
     console.error('[Play in MPV] Error loading current tab:', err);
-    elements.playBtnText.textContent = 'Error loading tab info';
-    elements.playCurrentTabBtn.disabled = true;
+    elements.videoUrl.value = '';
+    validateInputUrl();
   }
 }
 
@@ -407,9 +442,15 @@ function setupListeners() {
     });
   });
 
+  // Listener for video URL changes to run validation
+  elements.videoUrl.addEventListener('input', () => {
+    validateInputUrl();
+  });
+
   // Listener for the "Play Current Tab" button
   elements.playCurrentTabBtn.addEventListener('click', async () => {
-    if (!currentTabUrl) return;
+    const targetUrl = elements.videoUrl.value.trim();
+    if (!targetUrl) return;
 
     elements.playCurrentTabBtn.disabled = true;
     elements.playCurrentTabBtn.classList.add('loading');
@@ -420,7 +461,14 @@ function setupListeners() {
       const activeTab = tabs && tabs[0];
       
       let startTime = null;
-      if (activeTab && activeTab.id && (currentTabUrl.includes('youtube.com/watch') || currentTabUrl.includes('youtube.com/shorts'))) {
+      
+      // Determine if we are playing the current tab by comparing input URL to current tab URL (either exact match or short link representation)
+      const isCurrentTab = currentTabUrl && (
+        getYouTubeShortLink(currentTabUrl) === getYouTubeShortLink(targetUrl) || 
+        currentTabUrl === targetUrl
+      );
+
+      if (isCurrentTab && activeTab && activeTab.id && (targetUrl.includes('youtube.com') || targetUrl.includes('youtu.be'))) {
         try {
           const response = await chrome.tabs.sendMessage(activeTab.id, { type: 'GET_CURRENT_TIME' });
           if (response && typeof response.currentTime === 'number') {
@@ -432,7 +480,7 @@ function setupListeners() {
       }
 
       const res = await new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage({ type: 'PLAY_IN_MPV', url: currentTabUrl, startTime }, (res) => {
+        chrome.runtime.sendMessage({ type: 'PLAY_IN_MPV', url: targetUrl, startTime }, (res) => {
           if (chrome.runtime.lastError) {
             reject(new Error(chrome.runtime.lastError.message));
           } else if (res && !res.ok) {
@@ -444,12 +492,12 @@ function setupListeners() {
       });
       showToast('Launching MPV...');
     } catch (err) {
-      console.error('[Play in MPV] Play current tab error:', err);
+      console.error('[Play in MPV] Play URL error:', err);
       showToast(err.message || 'Failed to launch MPV', true);
     } finally {
       elements.playCurrentTabBtn.classList.remove('loading');
       elements.spinnerContainer.classList.add('hidden');
-      initPlayCurrentTab();
+      validateInputUrl();
     }
   });
 }

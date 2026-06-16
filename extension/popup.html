@@ -51,17 +51,20 @@
 
       <!-- Section: Play Current Tab -->
       <section class="section play-section">
-        <button id="playCurrentTabBtn" class="play-btn" disabled>
-          <span class="play-btn-content">
-            <svg class="play-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="5 3 19 12 5 21 5 3"></polygon>
-            </svg>
-            <span id="playBtnText">Checking active tab...</span>
-          </span>
-          <span class="spinner-container hidden">
-            <span class="spinner"></span>
-          </span>
-        </button>
+        <div class="play-row">
+          <input type="text" id="videoUrl" class="form-input" placeholder="Enter video URL...">
+          <button id="playCurrentTabBtn" class="play-btn" disabled aria-label="Play in MPV">
+            <span class="play-btn-content">
+              <svg class="play-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              <span id="playBtnText" class="hidden">Play in MPV</span>
+            </span>
+            <span class="spinner-container hidden">
+              <span class="spinner"></span>
+            </span>
+          </button>
+        </div>
         <div id="playWarning" class="play-warning hidden">
           <svg class="warning-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
@@ -230,13 +233,7 @@
         </div>
       </section>
 
-      <!-- Section: Requirements -->
-      <div class="requirements-box">
-        <div style="display: flex; gap: 8px; align-items: flex-start;">
-          <span style="color: #fbbf24; font-size: 13px;">⚠️</span>
-          <span><strong>System Requirement:</strong> Both <code>mpv</code> and <code>yt-dlp</code> must be installed on your local machine for playback to function.</span>
-        </div>
-      </div>
+
     </main>
   </div>
 
