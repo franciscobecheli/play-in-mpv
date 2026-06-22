@@ -54,49 +54,13 @@ def is_executable(path: str) -> bool:
 
 
 def find_mpv() -> str:
-    """Return the path to the mpv binary, preferring common system locations."""
-    if sys.platform == 'win32':
-        # Check PATH first
-        mpv_path = shutil.which('mpv')
-        if mpv_path:
-            return mpv_path
-        
-        # Check common Windows paths
-        candidates = []
-        program_files = os.environ.get('ProgramFiles', 'C:\\Program Files')
-        program_files_x86 = os.environ.get('ProgramFiles(x86)', 'C:\\Program Files (x86)')
-        userprofile = os.environ.get('USERPROFILE', 'C:\\Users\\default')
-        
-        candidates.extend([
-            os.path.join(program_files, 'mpv', 'mpv.exe'),
-            os.path.join(program_files_x86, 'mpv', 'mpv.exe'),
-            os.path.join(userprofile, 'scoop', 'apps', 'mpv', 'current', 'mpv.exe'),
-            'C:\\mpv\\mpv.exe'
-        ])
-        for c in candidates:
-            if os.path.isfile(c):
-                return c
-        return 'mpv.exe'   # fallback
-    else:
-        candidates = ['/usr/bin/mpv', '/usr/local/bin/mpv', 'mpv']
-        for c in candidates:
-            if is_executable(c):
-                return c
-        return 'mpv'   # fall back to PATH lookup
+    """Return the path to the mpv binary on PATH."""
+    return shutil.which('mpv') or 'mpv'
 
 
 def check_mpv_found(mpv_path: str = None) -> bool:
-    """Check if mpv binary is found on the system."""
-    mpv = mpv_path
-    if mpv:
-        basename = os.path.basename(mpv).lower()
-        if 'mpv' not in basename:
-            mpv = find_mpv()
-        elif ('/' in mpv or '\\' in mpv) and not is_executable(mpv):
-            mpv = find_mpv()
-    else:
-        mpv = find_mpv()
-
+    """Check if mpv binary is found on the system PATH or custom settings path."""
+    mpv = mpv_path or 'mpv'
     if '/' in mpv or '\\' in mpv:
         return is_executable(mpv)
     return bool(shutil.which(mpv))
@@ -137,10 +101,16 @@ def launch_mpv(url: str, mpv_path: str = None, flags: list = None, custom_flags:
     cmd.append('--')
     cmd.append(url)
 
+    # Pass the environment while filtering out browser-specific library paths
+    popen_env = os.environ.copy()
+    for var in ['LD_LIBRARY_PATH', 'LD_PRELOAD']:
+        popen_env.pop(var, None)
+
     popen_kwargs = {
         'stdin':  subprocess.DEVNULL,
         'stdout': subprocess.DEVNULL,
         'stderr': subprocess.DEVNULL,
+        'env':    popen_env,
     }
 
     if sys.platform != 'win32':

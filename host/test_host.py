@@ -42,45 +42,37 @@ class TestHost(unittest.TestCase):
 
     @patch('sys.platform', 'win32')
     @patch('shutil.which')
-    @patch('os.path.isfile')
-    @patch('os.environ.get')
-    def test_find_mpv_windows_in_path(self, mock_env, mock_isfile, mock_which):
+    def test_find_mpv_windows_in_path(self, mock_which):
         mock_which.return_value = 'C:\\ProgramData\\chocolatey\\bin\\mpv.exe'
         self.assertEqual(host.find_mpv(), 'C:\\ProgramData\\chocolatey\\bin\\mpv.exe')
         mock_which.assert_called_with('mpv')
 
     @patch('sys.platform', 'win32')
     @patch('shutil.which')
-    @patch('os.path.isfile')
-    def test_find_mpv_windows_common_paths(self, mock_isfile, mock_which):
+    def test_find_mpv_windows_not_found(self, mock_which):
         mock_which.return_value = None
-        
-        # Mock folder files. Assume C:\mpv\mpv.exe exists
-        def isfile_side_effect(path):
-            return path == 'C:\\mpv\\mpv.exe'
-        mock_isfile.side_effect = isfile_side_effect
-        
-        self.assertEqual(host.find_mpv(), 'C:\\mpv\\mpv.exe')
+        self.assertEqual(host.find_mpv(), 'mpv')
 
     @patch('sys.platform', 'linux')
-    @patch('os.path.isfile')
-    @patch('os.access')
-    def test_find_mpv_unix(self, mock_access, mock_isfile):
-        mock_isfile.return_value = True
-        mock_access.return_value = True
+    @patch('shutil.which')
+    def test_find_mpv_unix(self, mock_which):
+        mock_which.return_value = '/usr/bin/mpv'
         self.assertEqual(host.find_mpv(), '/usr/bin/mpv')
+        mock_which.assert_called_with('mpv')
 
     @patch('sys.platform', 'win32')
     @patch('shutil.which')
-    @patch('os.path.isfile')
-    def test_check_mpv_found_windows(self, mock_isfile, mock_which):
+    @patch('host.is_executable')
+    def test_check_mpv_found_windows(self, mock_is_executable, mock_which):
         # Mpv is custom path
-        mock_isfile.return_value = True
+        mock_is_executable.return_value = True
         self.assertTrue(host.check_mpv_found('C:\\mpv\\mpv.exe'))
+        mock_is_executable.assert_called_with('C:\\mpv\\mpv.exe')
 
-        # Not containing mpv
-        mock_which.return_value = 'C:\\mpv\\mpv.exe'
-        self.assertTrue(host.check_mpv_found('C:\\bin\\other.exe'))
+        # No path provided, falls back to PATH lookup
+        mock_which.return_value = 'C:\\Program Files\\mpv\\mpv.exe'
+        self.assertTrue(host.check_mpv_found(None))
+        mock_which.assert_called_with('mpv')
 
     @patch('subprocess.Popen')
     @patch('sys.platform', 'win32')
@@ -93,12 +85,17 @@ class TestHost(unittest.TestCase):
 
     @patch('subprocess.Popen')
     @patch('sys.platform', 'linux')
+    @patch.dict('os.environ', {'LD_LIBRARY_PATH': '/opt/vivaldi/lib', 'LD_PRELOAD': 'libsomething.so', 'PATH': '/usr/bin'})
     def test_launch_mpv_unix_session(self, mock_popen):
         host.launch_mpv('https://youtube.com/watch?v=123', mpv_path='mpv', flags=['--some-flag'])
         mock_popen.assert_called_once()
         kwargs = mock_popen.call_args[1]
         self.assertTrue(kwargs['start_new_session'])
         self.assertNotIn('creationflags', kwargs)
+        self.assertIn('env', kwargs)
+        self.assertNotIn('LD_LIBRARY_PATH', kwargs['env'])
+        self.assertNotIn('LD_PRELOAD', kwargs['env'])
+        self.assertEqual(kwargs['env'].get('PATH'), '/usr/bin')
 
 
 if __name__ == '__main__':
