@@ -104,7 +104,9 @@ def main():
         registry_paths = [
             r"Software\Google\Chrome\NativeMessagingHosts\com.playinmpv.host",
             r"Software\Microsoft\Edge\NativeMessagingHosts\com.playinmpv.host",
-            r"Software\Chromium\NativeMessagingHosts\com.playinmpv.host"
+            r"Software\Chromium\NativeMessagingHosts\com.playinmpv.host",
+            r"Software\Vivaldi\NativeMessagingHosts\com.playinmpv.host",
+            r"Software\Opera\NativeMessagingHosts\com.playinmpv.host"
         ]
         
         for reg_path in registry_paths:
@@ -127,10 +129,15 @@ def main():
             os.path.join(home, '.config', 'BraveSoftware', 'Brave-Browser', 'NativeMessagingHosts'),
             os.path.join(home, '.config', 'BraveSoftware', 'Brave-Browser-Beta', 'NativeMessagingHosts'),
             os.path.join(home, '.config', 'BraveSoftware', 'Brave-Browser-Nightly', 'NativeMessagingHosts'),
+            os.path.join(home, '.config', 'vivaldi', 'NativeMessagingHosts'),
+            os.path.join(home, '.config', 'vivaldi-snapshot', 'NativeMessagingHosts'),
+            os.path.join(home, '.config', 'opera', 'NativeMessagingHosts'),
             # macOS
             os.path.join(home, 'Library', 'Application Support', 'Google', 'Chrome', 'NativeMessagingHosts'),
             os.path.join(home, 'Library', 'Application Support', 'Chromium', 'NativeMessagingHosts'),
-            os.path.join(home, 'Library', 'Application Support', 'BraveSoftware', 'Brave-Browser', 'NativeMessagingHosts')
+            os.path.join(home, 'Library', 'Application Support', 'BraveSoftware', 'Brave-Browser', 'NativeMessagingHosts'),
+            os.path.join(home, 'Library', 'Application Support', 'Vivaldi', 'NativeMessagingHosts'),
+            os.path.join(home, 'Library', 'Application Support', 'com.operasoftware.Opera', 'NativeMessagingHosts')
         ]
         
         installed_count = 0
