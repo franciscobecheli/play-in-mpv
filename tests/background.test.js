@@ -113,6 +113,7 @@ describe('Background Service Worker', () => {
         {
           url: url,
           mpv_path: null,
+          ytdlp_path: null,
           flags: [
             '--hwdec=auto',
             '--save-position-on-quit',
