@@ -488,7 +488,8 @@
             <li class="step-item">
               <div class="step-title">Ensure Requirements are Installed (If Missing)</div>
               <div class="step-desc">
-                If you already have <strong>MPV</strong>, <strong>yt-dlp</strong>, and <strong>Python 3</strong> installed on your system path, you can skip this step. Otherwise, you can install them quickly using the built-in Windows Package Manager (<code>winget</code>) in Command Prompt or PowerShell:
+                Install <strong>MPV</strong>, <strong>yt-dlp</strong>, and <strong>Python 3</strong> on your system. **Important:** You must ensure all three executables are added to your system's <code>PATH</code> during or after installation so they can be detected.
+                <br><br>You can install them quickly using the built-in Windows Package Manager (<code>winget</code>) in Command Prompt or PowerShell:
               </div>
               <div class="code-container">
                 <button class="copy-btn" onclick="copyCode(this)">
@@ -496,27 +497,6 @@
                   Copy
                 </button>
                 <div class="code-content">winget install python3 shinchiro.mpv yt-dlp.yt-dlp</div>
-              </div>
-              <div class="step-desc" style="margin-top: 14px;">
-                After installing, open a <strong>new</strong> Command Prompt or PowerShell window and verify each tool is on your PATH by running:
-              </div>
-              <div class="code-container">
-                <button class="copy-btn" onclick="copyCode(this)">
-                  <svg class="icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                  Copy
-                </button>
-                <div class="code-content">mpv --version
-yt-dlp --version
-python --version</div>
-              </div>
-              <div class="step-desc" style="margin-top: 14px;">
-                If any command is not found, you need to add it to your system PATH manually:
-                <ol style="margin: 8px 0 0 20px; display: flex; flex-direction: column; gap: 4px;">
-                  <li>Open <strong>Start → System → Advanced system settings → Environment Variables</strong>.</li>
-                  <li>Under <strong>System variables</strong>, select <code>Path</code> and click <strong>Edit</strong>.</li>
-                  <li>Add the folder containing the missing executable (e.g. <code>C:\Program Files\mpv</code>).</li>
-                  <li>Click <strong>OK</strong> on all dialogs to save, then open a new terminal to verify.</li>
-                </ol>
               </div>
               <div class="step-desc" style="margin-top: 14px; color: var(--text-main);">
                 ⚠️ <strong>Important:</strong> Chrome inherits PATH only at launch time. If you installed or added tools to PATH while Chrome was already open, you <strong>must fully close and reopen Chrome</strong> — including from the system tray — before the extension can detect them.
@@ -557,7 +537,7 @@ python --version</div>
           <ul class="steps">
             <li class="step-item">
               <div class="step-title">Install System Requirements (If Missing)</div>
-              <div class="step-desc">If you already have <code>mpv</code>, <code>yt-dlp</code>, and <code>python3</code> installed on your system path, you can skip this step. Otherwise, we recommend installing them using <a href="https://brew.sh/" target="_blank" style="color:var(--accent-hover);">Homebrew</a>:</div>
+              <div class="step-desc">Install <code>mpv</code>, <code>yt-dlp</code>, and <code>python3</code> on your system. **Important:** All three dependencies must be added to your system's <code>PATH</code> environment variable so the extension can locate and execute them. We recommend installing them using <a href="https://brew.sh/" target="_blank" style="color:var(--accent-hover);">Homebrew</a> (which handles path registration automatically):</div>
               <div class="code-container">
                 <button class="copy-btn" onclick="copyCode(this)">
                   <svg class="icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
@@ -574,18 +554,17 @@ python --version</div>
 
             <li class="step-item">
               <div class="step-title">Run the Python Installer</div>
-              <div class="step-desc">Open your Terminal, navigate to the extracted folder, and run the installer:</div>
+              <div class="step-desc">Open your Terminal inside the extracted <code>play-in-mpv-host</code> directory (or navigate into it, e.g. <code>cd ~/Downloads/play-in-mpv-host</code>), and run the installer:</div>
               <div class="code-container">
                 <button class="copy-btn" onclick="copyCode(this)">
                   <svg class="icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                   Copy
                 </button>
-                <div class="code-content">cd play-in-mpv-host
-python3 install.py</div>
+                <div class="code-content">python3 install.py</div>
               </div>
               <div class="step-desc" style="margin-top: 14px;">
-                Press <strong>Enter</strong> at the prompt to use the default Chrome Web Store extension.
-                <br><em>(If you are using a local developer version, run <code>python3 install.py &lt;YOUR_EXTENSION_ID&gt;</code> instead)</em>
+                If you ran the script without arguments, press <strong>Enter</strong> at the prompt to use the default Chrome Web Store extension ID.
+                <br><em>(If you are using a local developer version, specify your custom 32-character Extension ID as a command-line argument: <code>python3 install.py &lt;YOUR_EXTENSION_ID&gt;</code>)</em>
               </div>
             </li>
 
@@ -610,7 +589,7 @@ python3 install.py</div>
           <ul class="steps">
             <li class="step-item">
               <div class="step-title">Install System Requirements (If Missing)</div>
-              <div class="step-desc">If you already have <code>mpv</code>, <code>yt-dlp</code>, and <code>python3</code> installed on your system path, you can skip this step. Otherwise, use your package manager to install them (example for Debian/Ubuntu):</div>
+              <div class="step-desc">Install <code>mpv</code>, <code>yt-dlp</code>, and <code>python3</code> on your system. **Important:** All three dependencies must be added to your system's <code>PATH</code> environment variable so the extension can locate and execute them. You can use your package manager to install them (example for Debian/Ubuntu):</div>
               <div class="code-container">
                 <button class="copy-btn" onclick="copyCode(this)">
                   <svg class="icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
@@ -627,18 +606,17 @@ python3 install.py</div>
 
             <li class="step-item">
               <div class="step-title">Run the Python Installer</div>
-              <div class="step-desc">Open your Terminal, navigate to the extracted directory, and run `install.py`:</div>
+              <div class="step-desc">Open your Terminal inside the extracted <code>play-in-mpv-host</code> directory (or navigate into it, e.g. <code>cd ~/Downloads/play-in-mpv-host</code>), and run the installer:</div>
               <div class="code-container">
                 <button class="copy-btn" onclick="copyCode(this)">
                   <svg class="icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                   Copy
                 </button>
-                <div class="code-content">cd play-in-mpv-host
-python3 install.py</div>
+                <div class="code-content">python3 install.py</div>
               </div>
               <div class="step-desc" style="margin-top: 14px;">
-                Press <strong>Enter</strong> at the prompt to use the default Chrome Web Store extension.
-                <br><em>(If you are using a local developer version, run <code>python3 install.py &lt;YOUR_EXTENSION_ID&gt;</code> instead)</em>
+                If you ran the script without arguments, press <strong>Enter</strong> at the prompt to use the default Chrome Web Store extension ID.
+                <br><em>(If you are using a local developer version, specify your custom 32-character Extension ID as a command-line argument: <code>python3 install.py &lt;YOUR_EXTENSION_ID&gt;</code>)</em>
               </div>
             </li>
 
@@ -693,7 +671,7 @@ python3 install.py</div>
 
       <div class="faq-item">
         <div class="faq-question">How do I uninstall the native bridge?</div>
-        <div class="faq-answer">You can easily remove all trace files and registry entries by running the uninstaller script. In a terminal, run: <code>python3 uninstall.py</code> (or <code>python uninstall.py</code> on Windows) located inside the <code>host</code> directory.</div>
+        <div class="faq-answer">You can easily remove all trace files and registry entries by running the uninstaller script. In a terminal, run: <code>python3 uninstall.py</code> (or <code>python uninstall.py</code> on Windows) located inside your host directory (<code>play-in-mpv-host</code> for zip package users, or <code>host</code> for repository clones).</div>
       </div>
 
       <div class="faq-item">

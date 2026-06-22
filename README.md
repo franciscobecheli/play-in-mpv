@@ -11,13 +11,15 @@ Official Setup Guide: [Setup & Installation Guide](https://franciscobecheli.gith
 - **YouTube UI Integration**: Custom native-style MPV button injected directly into the YouTube player control bar.
 - **Context Menu Fallback**: Right-click any video link or thumbnail and select "Open Link in MPV" to bypass any YouTube UI layout updates.
 - **Customizable Shortcut**: Trigger playback instantly using keyboard shortcuts (default: `Alt+P`).
-- **Sleek Options UI**: Vibrant glassmorphic configuration panel to cap video resolution, enable hardware decoding (`--hwdec`), auto-pause the YouTube player, toggle window modes (fullscreen, always-on-top, borderless), and pass custom command-line flags.
+- **Direct URL Playback**: Paste and launch any video link directly from the settings popup URL field.
+- **Start at Current Time**: Seamlessly launch MPV at the exact timestamp where you left off on the YouTube player.
+- **Sleek Options UI**: Vibrant glassmorphic configuration panel to cap video resolution, enable hardware decoding (`--hwdec`), auto-pause the YouTube player, toggle window modes (fullscreen, always-on-top, borderless), configure custom executable paths for both `mpv` and `yt-dlp`, and pass custom command-line flags.
 
 ---
 
 ## Prerequisites
 
-To play stream links, the extension uses a local Python bridge (native host) that communicates with your system's media player. You must have the following applications installed on your system:
+To play stream links, the extension uses a local Python bridge (native host) that communicates with your system's media player. You must have the following applications installed on your system and available on your system's `PATH`:
 
 1. **MPV**: The media player.
 2. **yt-dlp**: The media extraction engine (used by MPV to stream YouTube videos).
@@ -43,26 +45,13 @@ Until the extension is published on the Chrome Web Store, you can load it as a d
 
 ### Step 2: Install System Requirements
 
-Install `mpv`, `yt-dlp`, and `python` on your system.
+Install `mpv`, `yt-dlp`, and `python` on your system. **Important:** All three dependencies must be added to your system's `PATH` environment variable so the extension can locate and execute them.
 
 #### Windows
 Run the following command in Command Prompt or PowerShell (uses Windows Package Manager):
 ```cmd
 winget install python3 shinchiro.mpv yt-dlp.yt-dlp
 ```
-
-After installing, open a **new** terminal and verify each tool is on your PATH:
-```cmd
-mpv --version
-yt-dlp --version
-python --version
-```
-
-If any command is not found, add its folder to your **System PATH** manually:
-1. Open **Start → System → Advanced system settings → Environment Variables**.
-2. Under **System variables**, select `Path` and click **Edit**.
-3. Add the folder containing the missing executable (e.g. `C:\Program Files\mpv`).
-4. Click **OK** on all dialogs, then open a new terminal to verify.
 
 > ⚠️ **Chrome restart required** — Chrome reads PATH only at launch time. If you installed or modified PATH while Chrome was running, you must **fully close Chrome** (including from the system tray) and reopen it before the extension can detect the tools.
 
@@ -94,13 +83,13 @@ Instead of downloading the entire repository, you can download the lightweight h
 2. A command prompt will open. If you installed the extension via the Chrome Web Store, simply press **Enter** to register using the default ID. (If using a local unpacked developer version, paste your 32-character Extension ID and press Enter).
  
 ##### macOS & Linux
-1. Open a terminal in the extracted `play-in-mpv-host` directory.
+1. Open a terminal in the extracted `play-in-mpv-host` directory (or the `host` directory if you cloned the repository).
 2. Run the installer script:
    ```bash
    python3 install.py
    ```
-   *(If you are using a local developer version, specify the ID as an argument: `python3 install.py <YOUR_EXTENSION_ID>`)*
-3. Press **Enter** at the prompt to confirm setup with the default Web Store ID.
+   *(If you are using a local developer version, specify the Extension ID as a command-line argument: `python3 install.py <YOUR_EXTENSION_ID>`)*
+3. If you ran the installer script without arguments, press **Enter** at the prompt to confirm setup with the default Web Store ID. If you specified your custom ID as an argument, the installation completes non-interactively without displaying a prompt.
  
 ---
 
@@ -117,14 +106,14 @@ Instead of downloading the entire repository, you can download the lightweight h
 If you wish to remove the native host registration and temporary files from your system, run the uninstaller:
 
 #### Windows
-Run Command Prompt or PowerShell as administrator, navigate to the `host` directory, and run:
+Open Command Prompt or PowerShell, navigate to your host directory (`play-in-mpv-host` or the `host` directory if you cloned the repository), and run:
 ```cmd
 python uninstall.py
 ```
 
 #### macOS & Linux
+Open Terminal, navigate to your host directory (`play-in-mpv-host` or the `host` directory if you cloned the repository), and run:
 ```bash
-cd host
 python3 uninstall.py
 ```
 
