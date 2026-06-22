@@ -5,6 +5,21 @@
  * registering listeners to auto-save values, and showing saving toast feedback.
  */
 
+const MIN_HOST_VERSION = '0.3.0';
+
+function isVersionOutdated(hostVersion, minVersion) {
+  if (!hostVersion) return true;
+  const parts1 = hostVersion.split('.').map(Number);
+  const parts2 = minVersion.split('.').map(Number);
+  for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+    const val1 = parts1[i] || 0;
+    const val2 = parts2[i] || 0;
+    if (val1 < val2) return true;
+    if (val1 > val2) return false;
+  }
+  return false;
+}
+
 // Default settings definitions
 const DEFAULT_SETTINGS = {
   qualityCap: 'best',
@@ -204,10 +219,13 @@ async function initPlayCurrentTab() {
 /**
  * Helper to update the system warning banner content and visibility based on requirements check.
  */
-function updateWarningBanner(ytdlMissing, mpvMissing, hostMissing = false) {
+function updateWarningBanner(ytdlMissing, mpvMissing, hostMissing = false, hostOutdated = false, hostVersion = '') {
   if (hostMissing) {
     elements.ytdlWarningBanner.classList.remove('hidden');
     elements.warningBannerText.innerHTML = '<strong>Native Host Not Connected:</strong> The local bridge is missing or failed to connect. <a href="https://franciscobecheli.github.io/play-in-mpv/" target="_blank" style="color: #60a5fa; text-decoration: underline; font-weight: 500;">Download & Install Setup Guide</a>';
+  } else if (hostOutdated) {
+    elements.ytdlWarningBanner.classList.remove('hidden');
+    elements.warningBannerText.innerHTML = `<strong>Outdated Host Bridge:</strong> Your local bridge (v${hostVersion || 'unknown'}) is outdated. Please update and run the installer for version ${MIN_HOST_VERSION}. <a href="https://franciscobecheli.github.io/play-in-mpv/" target="_blank" style="color: #60a5fa; text-decoration: underline; font-weight: 500;">Setup Guide & Installer</a>`;
   } else if (ytdlMissing || mpvMissing) {
     elements.ytdlWarningBanner.classList.remove('hidden');
     let msg = '';
@@ -239,7 +257,15 @@ async function checkSystemStatus() {
       });
     });
     if (res && res.ok && res.response) {
-      updateWarningBanner(!!res.response.ytdl_missing, !!res.response.mpv_missing, false);
+      const hostVersion = res.response.version;
+      const outdated = isVersionOutdated(hostVersion, MIN_HOST_VERSION);
+      updateWarningBanner(
+        !!res.response.ytdl_missing,
+        !!res.response.mpv_missing,
+        false,
+        outdated,
+        hostVersion
+      );
     } else if (res && !res.ok) {
       updateWarningBanner(false, false, true);
     } else {

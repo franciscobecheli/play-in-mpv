@@ -18,6 +18,9 @@ import subprocess
 import sys
 
 
+VERSION = '0.3.0'
+
+
 # ---------------------------------------------------------------------------
 # Chrome Native Messaging protocol helpers
 # ---------------------------------------------------------------------------
@@ -165,7 +168,8 @@ def main() -> None:
         send_message({
             'ok': True,
             'ytdl_missing': not ytdl_found,
-            'mpv_missing': not mpv_found
+            'mpv_missing': not mpv_found,
+            'version': VERSION
         })
         sys.exit(0)
 

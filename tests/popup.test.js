@@ -357,7 +357,7 @@ describe('Popup Settings UI', () => {
     it('should show banner and mention both if both mpv and yt-dlp are missing', async () => {
       chrome.runtime.sendMessage.mockImplementation((payload, cb) => {
         if (payload.type === 'CHECK_STATUS') {
-          const res = { ok: true, response: { ytdl_missing: true, mpv_missing: true } };
+          const res = { ok: true, response: { ytdl_missing: true, mpv_missing: true, version: '0.3.0' } };
           if (typeof cb === 'function') cb(res);
           return Promise.resolve(res);
         }
@@ -378,7 +378,7 @@ describe('Popup Settings UI', () => {
     it('should show banner and mention yt-dlp if only yt-dlp is missing', async () => {
       chrome.runtime.sendMessage.mockImplementation((payload, cb) => {
         if (payload.type === 'CHECK_STATUS') {
-          const res = { ok: true, response: { ytdl_missing: true, mpv_missing: false } };
+          const res = { ok: true, response: { ytdl_missing: true, mpv_missing: false, version: '0.3.0' } };
           if (typeof cb === 'function') cb(res);
           return Promise.resolve(res);
         }
@@ -400,7 +400,7 @@ describe('Popup Settings UI', () => {
     it('should show banner and mention mpv if only mpv is missing', async () => {
       chrome.runtime.sendMessage.mockImplementation((payload, cb) => {
         if (payload.type === 'CHECK_STATUS') {
-          const res = { ok: true, response: { ytdl_missing: false, mpv_missing: true } };
+          const res = { ok: true, response: { ytdl_missing: false, mpv_missing: true, version: '0.3.0' } };
           if (typeof cb === 'function') cb(res);
           return Promise.resolve(res);
         }
@@ -422,7 +422,7 @@ describe('Popup Settings UI', () => {
     it('should hide banner if neither is missing', async () => {
       chrome.runtime.sendMessage.mockImplementation((payload, cb) => {
         if (payload.type === 'CHECK_STATUS') {
-          const res = { ok: true, response: { ytdl_missing: false, mpv_missing: false } };
+          const res = { ok: true, response: { ytdl_missing: false, mpv_missing: false, version: '0.3.0' } };
           if (typeof cb === 'function') cb(res);
           return Promise.resolve(res);
         }
@@ -462,6 +462,28 @@ describe('Popup Settings UI', () => {
       expect(text.innerHTML).toContain('href="https://franciscobecheli.github.io/play-in-mpv/"');
 
       chrome.runtime.lastError = null;
+    });
+
+    it('should show outdated banner if host version is older than required', async () => {
+      chrome.runtime.sendMessage.mockImplementation((payload, cb) => {
+        if (payload.type === 'CHECK_STATUS') {
+          const res = { ok: true, response: { ytdl_missing: false, mpv_missing: false, version: '0.2.0' } };
+          if (typeof cb === 'function') cb(res);
+          return Promise.resolve(res);
+        }
+        const res = { ok: true };
+        if (typeof cb === 'function') cb(res);
+        return Promise.resolve(res);
+      });
+
+      document.dispatchEvent(new Event('DOMContentLoaded'));
+      await new Promise(process.nextTick);
+
+      const banner = document.getElementById('ytdlWarningBanner');
+      const text = document.getElementById('warningBannerText');
+      expect(banner.classList.contains('hidden')).toBe(false);
+      expect(text.innerHTML).toContain('Outdated Host Bridge');
+      expect(text.innerHTML).toContain('v0.2.0');
     });
   });
 });
