@@ -208,13 +208,15 @@ function updateWarningBanner(ytdlMissing, mpvMissing, hostMissing = false) {
     elements.warningBannerText.innerHTML = '<strong>Native Host Not Connected:</strong> The local bridge is missing or failed to connect. <a href="https://franciscobecheli.github.io/play-in-mpv/" target="_blank" style="color: #60a5fa; text-decoration: underline; font-weight: 500;">Download & Install Setup Guide</a>';
   } else if (ytdlMissing || mpvMissing) {
     elements.ytdlWarningBanner.classList.remove('hidden');
+    let msg = '';
     if (ytdlMissing && mpvMissing) {
-      elements.warningBannerText.innerHTML = '<strong>System Warning:</strong> Both <code>mpv</code> and <code>yt-dlp</code> were not found on your system. Web playback will fail. Please install them.';
+      msg = 'Both <code>mpv</code> and <code>yt-dlp</code> were not found on your system <strong>PATH</strong>.';
     } else if (ytdlMissing) {
-      elements.warningBannerText.innerHTML = '<strong>System Warning:</strong> <code>yt-dlp</code> was not found on your system. Web playback will fail. Please install it.';
+      msg = '<code>yt-dlp</code> was not found on your system <strong>PATH</strong>.';
     } else {
-      elements.warningBannerText.innerHTML = '<strong>System Warning:</strong> <code>mpv</code> was not found on your system. Web playback will fail. Please install it.';
+      msg = '<code>mpv</code> was not found on your system <strong>PATH</strong> (or custom settings path).';
     }
+    elements.warningBannerText.innerHTML = `<strong>System Warning:</strong> ${msg} This is required for the extension to work. <a href="https://franciscobecheli.github.io/play-in-mpv/" target="_blank" style="color: #60a5fa; text-decoration: underline; font-weight: 500;">Setup Guide & PATH Instructions</a>`;
   } else {
     elements.ytdlWarningBanner.classList.add('hidden');
   }

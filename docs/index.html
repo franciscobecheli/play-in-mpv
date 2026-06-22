@@ -664,6 +664,29 @@ python3 install.py</div>
       </div>
 
       <div class="faq-item">
+        <div class="faq-question">How do I add a folder to my system PATH?</div>
+        <div class="faq-answer">
+          <strong>Windows:</strong>
+          <ol style="margin: 8px 0 12px 20px; display: flex; flex-direction: column; gap: 4px;">
+            <li>Open <strong>Start → System → Advanced system settings → Environment Variables</strong>.</li>
+            <li>Under <strong>System variables</strong>, select <code>Path</code> and click <strong>Edit</strong>.</li>
+            <li>Click <strong>New</strong> and add the folder containing the executable (e.g. <code>C:\Program Files\mpv</code>).</li>
+            <li>Click <strong>OK</strong> to save all dialogs, then restart your browser/terminal.</li>
+          </ol>
+          <strong>macOS & Linux:</strong>
+          <ol style="margin: 8px 0 12px 20px; display: flex; flex-direction: column; gap: 4px;">
+            <li>Determine your active shell by running: <code>echo $SHELL</code>.</li>
+            <li>For <strong>zsh</strong> (default on macOS), open <code>~/.zshrc</code>. For <strong>bash</strong> (default on most Linux distributions), open <code>~/.bashrc</code> (or <code>~/.profile</code>).</li>
+            <li>Add the following line at the bottom of the file (replace with your folder path):
+              <br><code>export PATH="$PATH:$HOME/.local/bin"</code>
+            </li>
+            <li>Save the file and reload the shell config: <code>source ~/.zshrc</code> (or <code>source ~/.bashrc</code>).</li>
+          </ol>
+          <strong>Note for browsers on Linux/macOS:</strong> Browsers launched from desktop shortcuts or taskbars run in a system-level session that often ignores terminal configurations (like <code>.bashrc</code> or <code>.zshrc</code>). If the extension popup still warns that a tool is missing from your PATH, you can symlink the binary to a standard system directory that is always on the path (e.g., <code>sudo ln -s ~/.local/bin/yt-dlp /usr/local/bin/yt-dlp</code>), or launch the browser from your terminal.
+        </div>
+      </div>
+
+      <div class="faq-item">
         <div class="faq-question">Why does MPV open but show a playback error?</div>
         <div class="faq-answer">This is usually caused by an outdated version of <code>yt-dlp</code>. Websites like YouTube update their video streaming protocols frequently. Update your local copy of <code>yt-dlp</code>. If you installed it via Windows Package Manager, run <code>winget upgrade yt-dlp.yt-dlp</code>. If you installed it via Homebrew, run <code>brew upgrade yt-dlp</code>.</div>
       </div>
