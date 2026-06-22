@@ -66,7 +66,17 @@ def check_mpv_found(mpv_path: str = None) -> bool:
     return bool(shutil.which(mpv))
 
 
-def launch_mpv(url: str, mpv_path: str = None, flags: list = None, custom_flags: str = None) -> tuple[bool, str]:
+def check_ytdl_found(ytdl_path: str = None) -> bool:
+    """Check if yt-dlp/youtube-dl is found on the system PATH or custom settings path."""
+    ytdl = ytdl_path
+    if ytdl:
+        if '/' in ytdl or '\\' in ytdl:
+            return is_executable(ytdl)
+        return bool(shutil.which(ytdl))
+    return bool(shutil.which('yt-dlp') or shutil.which('youtube-dl'))
+
+
+def launch_mpv(url: str, mpv_path: str = None, ytdlp_path: str = None, flags: list = None, custom_flags: str = None) -> tuple[bool, str]:
     """
     Spawn mpv as a detached subprocess.
 
@@ -89,6 +99,14 @@ def launch_mpv(url: str, mpv_path: str = None, flags: list = None, custom_flags:
         mpv = find_mpv()
 
     cmd = [mpv]
+    ytdl = ytdlp_path
+    if ytdl:
+        basename = os.path.basename(ytdl).lower()
+        if 'yt-dlp' in basename or 'youtube-dl' in basename:
+            if ('/' in ytdl or '\\' in ytdl) and is_executable(ytdl):
+                cmd.append(f'--script-opts=ytdl_hook-ytdl_path={ytdl}')
+            elif not ('/' in ytdl or '\\' in ytdl) and shutil.which(ytdl):
+                cmd.append(f'--script-opts=ytdl_hook-ytdl_path={shutil.which(ytdl)}')
     if flags and isinstance(flags, list):
         cmd.extend([str(f) for f in flags])
     if custom_flags and isinstance(custom_flags, str):
@@ -139,9 +157,8 @@ def main() -> None:
 
     # Check status request from popup initialization
     if message.get('type') == 'CHECK_STATUS':
-        # Check for yt-dlp or youtube-dl in the system PATH
-        ytdl_found = bool(shutil.which('yt-dlp') or shutil.which('youtube-dl'))
-        # ytdl_found = False
+        # Check for yt-dlp or youtube-dl
+        ytdl_found = check_ytdl_found(message.get('ytdlp_path'))
         # Check for mpv in system PATH
         mpv_found = check_mpv_found(message.get('mpv_path'))
         # mpv_found = False
@@ -158,10 +175,11 @@ def main() -> None:
         sys.exit(1)
 
     mpv_path = message.get('mpv_path')
+    ytdlp_path = message.get('ytdlp_path')
     flags = message.get('flags')
     custom_flags = message.get('custom_flags')
 
-    ok, info = launch_mpv(url, mpv_path, flags, custom_flags)
+    ok, info = launch_mpv(url, mpv_path, ytdlp_path, flags, custom_flags)
     send_message({
         'ok': ok,
         'info': info

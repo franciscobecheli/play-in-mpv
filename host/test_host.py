@@ -97,6 +97,42 @@ class TestHost(unittest.TestCase):
         self.assertNotIn('LD_PRELOAD', kwargs['env'])
         self.assertEqual(kwargs['env'].get('PATH'), '/usr/bin')
 
+    @patch('sys.platform', 'win32')
+    @patch('shutil.which')
+    @patch('host.is_executable')
+    def test_check_ytdl_found_windows(self, mock_is_executable, mock_which):
+        # yt-dlp is custom path
+        mock_is_executable.return_value = True
+        self.assertTrue(host.check_ytdl_found('C:\\ytdl\\yt-dlp.exe'))
+        mock_is_executable.assert_called_with('C:\\ytdl\\yt-dlp.exe')
+
+        # No path provided, falls back to PATH lookup for yt-dlp or youtube-dl
+        mock_which.return_value = 'C:\\bin\\yt-dlp.exe'
+        self.assertTrue(host.check_ytdl_found(None))
+        mock_which.assert_any_call('yt-dlp')
+
+    @patch('subprocess.Popen')
+    @patch('sys.platform', 'linux')
+    @patch('shutil.which')
+    @patch('host.is_executable')
+    def test_launch_mpv_with_custom_ytdlp_path(self, mock_is_executable, mock_which, mock_popen):
+        mock_is_executable.return_value = True
+        mock_which.return_value = '/usr/local/bin/yt-dlp'
+        
+        # Test custom ytdlp path with path separators (absolute path)
+        host.launch_mpv('https://youtube.com/watch?v=123', mpv_path='mpv', ytdlp_path='/usr/local/bin/yt-dlp')
+        mock_popen.assert_called_once()
+        cmd = mock_popen.call_args[0][0]
+        self.assertIn('--script-opts=ytdl_hook-ytdl_path=/usr/local/bin/yt-dlp', cmd)
+        
+        mock_popen.reset_mock()
+        
+        # Test custom ytdlp path without path separators (binary name only, found in PATH)
+        host.launch_mpv('https://youtube.com/watch?v=123', mpv_path='mpv', ytdlp_path='yt-dlp')
+        mock_popen.assert_called_once()
+        cmd = mock_popen.call_args[0][0]
+        self.assertIn('--script-opts=ytdl_hook-ytdl_path=/usr/local/bin/yt-dlp', cmd)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -227,6 +227,12 @@
         </div>
 
         <div class="form-group">
+          <label for="ytdlpPath" class="form-label">yt-dlp Executable Path</label>
+          <p class="form-desc">Leave blank to use default system path lookup.</p>
+          <input type="text" id="ytdlpPath" class="form-input" placeholder="e.g. /usr/bin/yt-dlp">
+        </div>
+
+        <div class="form-group">
           <label for="customFlags" class="form-label">Custom Command-line Flags</label>
           <p class="form-desc">Additional arguments passed to MPV (one per line or space-separated).</p>
           <textarea id="customFlags" class="form-textarea" rows="2" placeholder="e.g. --volume=70&#10;--no-keepaspect-window"></textarea>

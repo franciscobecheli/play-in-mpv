@@ -36,6 +36,7 @@ const DEFAULT_SETTINGS = {
   fullscreen: false,
   forceWindow: true,
   mpvPath: '',
+  ytdlpPath: '',
   customFlags: '',
   shortcutEnabled: true,
   shortcutKey: 'Alt+P'
@@ -131,6 +132,7 @@ function launchMpv(url, startTime = null) {
       const payload = {
         url: cleanUrl,
         mpv_path: settings.mpvPath || null,
+        ytdlp_path: settings.ytdlpPath || null,
         flags: flags,
         custom_flags: settings.customFlags || ''
       };
@@ -154,7 +156,8 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         chrome.storage.local.get(DEFAULT_SETTINGS, (settings) => {
           const payload = {
             type: 'CHECK_STATUS',
-            mpv_path: settings.mpvPath || null
+            mpv_path: settings.mpvPath || null,
+            ytdlp_path: settings.ytdlpPath || null
           };
           chrome.runtime.sendNativeMessage(NATIVE_HOST, payload, (res) => {
             if (chrome.runtime.lastError) {

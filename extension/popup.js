@@ -17,6 +17,7 @@ const DEFAULT_SETTINGS = {
   fullscreen: false,
   forceWindow: true,
   mpvPath: '',
+  ytdlpPath: '',
   customFlags: '',
   shortcutEnabled: true,
   shortcutKey: 'Alt+P'
@@ -34,6 +35,7 @@ const elements = {
   fullscreen: document.getElementById('fullscreen'),
   forceWindow: document.getElementById('forceWindow'),
   mpvPath: document.getElementById('mpvPath'),
+  ytdlpPath: document.getElementById('ytdlpPath'),
   customFlags: document.getElementById('customFlags'),
   toast: document.getElementById('toast'),
   toastText: document.getElementById('toastText'),
@@ -266,6 +268,7 @@ async function loadSettings() {
     elements.fullscreen.checked = settings.fullscreen;
     elements.forceWindow.checked = settings.forceWindow;
     elements.mpvPath.value = settings.mpvPath;
+    elements.ytdlpPath.value = settings.ytdlpPath;
     elements.customFlags.value = settings.customFlags;
     elements.shortcutEnabled.checked = settings.shortcutEnabled;
     elements.shortcutKeyBtn.textContent = settings.shortcutKey;
@@ -297,6 +300,7 @@ async function saveSettings() {
     fullscreen: elements.fullscreen.checked,
     forceWindow: elements.forceWindow.checked,
     mpvPath: elements.mpvPath.value.trim(),
+    ytdlpPath: elements.ytdlpPath.value.trim(),
     customFlags: elements.customFlags.value,
     shortcutEnabled: elements.shortcutEnabled.checked,
     shortcutKey: elements.shortcutKeyBtn.textContent
@@ -430,6 +434,7 @@ function setupListeners() {
   // Debounce saves for keyboard input fields to prevent excessive storage writes
   const debouncedSaveList = [
     elements.mpvPath,
+    elements.ytdlpPath,
     elements.customFlags
   ];
 
